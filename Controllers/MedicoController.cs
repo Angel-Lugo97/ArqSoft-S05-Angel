@@ -16,6 +16,26 @@ namespace Citas_App.Controllers
             return View(Medicos());
         }
 
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Medico medico)
+        {
+            var medicos = Medicos();
+
+            medico.Id = medicos.Any() ? medicos.Max(m => m.Id) + 1 : 1;
+
+            medicos.Add(medico);
+
+            DatosJson.Guardar("Medicos.json", medicos);
+
+            return RedirectToAction(nameof(Index));
+        }
+
         public IActionResult Detalle(int id)
         {
             var medico = Medicos().FirstOrDefault(m => m.Id == id);

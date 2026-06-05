@@ -1,0 +1,39 @@
+@model CitasApp.Models.Medico
+
+<h1>Agregar médico</h1>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label>Nombre</label>
+        <input asp-for="Nombre" />
+    </div>
+
+    <br />
+
+    <div>
+        <label>Apellido</label>
+        <input asp-for="Apellido" />
+    </div>
+
+    <br />
+
+    <div>
+        <label>Especialidad</label>
+        <input asp-for="Especialidad" />
+    </div>
+
+    <br />
+
+    <div>
+        <label>Número de licencia</label>
+        <input asp-for="NumeroLicencia" />
+    </div>
+
+    <br />
+
+    <button type="submit">Guardar médico</button>
+</form>
+
+<br />
+
+<a asp-controller="Medico" asp-action="Index">Regresar</a>

@@ -1,12 +1,17 @@
 ﻿@model List<CitasApp.Models.Cita>
+
 @{
     var pacientes = ViewBag.Pacientes as List<Paciente>;
     var medicos = ViewBag.Medicos as List<Medico>;
-
 }
 
-
 <h1>Agenda de citas</h1>
+
+<a asp-controller="Cita" asp-action="Create">Agregar cita</a>
+
+<br />
+<br />
+
 <table border="2" cellpadding="9">
     <tr>
         <th>Fecha</th>
@@ -15,9 +20,9 @@
         <th>Médico</th>
         <th>Motivo</th>
         <th>Estado</th>
+        <th>Detalles</th>
     </tr>
 
-   
     @foreach (var c in Model)
     {
         var paciente = pacientes?.FirstOrDefault(p => p.Id == c.PacienteId);
@@ -31,14 +36,10 @@
             <td>@c.Motivo</td>
             <td>@c.Estado</td>
             <td>
-                <a asp-controller="Cita" asp-action="PorPaciente" asp-route-pacienteId="@c.PacienteId"> Ver detalles</a>
+                <a asp-controller="Cita" asp-action="PorPaciente" asp-route-pacienteId="@c.PacienteId">Ver detalles</a>
             </td>
         </tr>
-
-    
-
     }
 </table>
-
 
 <br />
