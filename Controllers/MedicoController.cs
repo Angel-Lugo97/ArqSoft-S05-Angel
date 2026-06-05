@@ -1,4 +1,4 @@
-﻿using CitasApp.Models;
+﻿using CitasApp.Data;
 using CitasApp.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,46 +6,26 @@ namespace Citas_App.Controllers
 {
     public class MedicoController : Controller
     {
-        private static List<Medico> _medicos = new()
+        private List<Medico> Medicos()
         {
-            new Medico
-            {
-                Id = 1,
-                Nombre = "Dr. Carlos",
-                Apellido = "Reyes",
-                Especialidad="Medicina General",
-                NumeroLicencia = "MG-10421"
-            },
-            new Medico
-            {
-                Id = 2,
-                Nombre = "Dra. Patricia",
-                Apellido = "Vega",
-                Especialidad="Pediatria",
-                NumeroLicencia = "PG-20835"
-            },
-            new Medico
-            {
-                Id = 3,
-                Nombre = "Dr. Roberto",
-                Apellido = "Sánchez",
-                Especialidad="Cardiología",
-                NumeroLicencia = "CA-30117"
-            },
-        };
-        // Lista con filtro opcional por género
+            return DatosJson.Leer<Medico>("Medicos.json");
+        }
 
-        public IActionResult Index() => View(_medicos);
-
-
-
-        // Detalle de un item
+        public IActionResult Index()
+        {
+            return View(Medicos());
+        }
 
         public IActionResult Detalle(int id)
         {
-            var medico = _medicos.FirstOrDefault(m => m.Id == id);
-            return medico == null ? NotFound() : View(medico);
+            var medico = Medicos().FirstOrDefault(m => m.Id == id);
+
+            if (medico == null)
+            {
+                return NotFound();
+            }
+
+            return View(medico);
         }
     }
-
 }
