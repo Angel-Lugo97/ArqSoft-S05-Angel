@@ -133,6 +133,32 @@ ArqSoft-S05-Angel/
 └── README.md
 ```
 ---
+## 📸 Evidencias de Ejecución
+
+En esta sección se muestran capturas del proyecto funcionando correctamente en el navegador. Las imágenes evidencian la pantalla principal, la agenda de citas y el formulario para agregar una nueva cita médica.
+
+### ✅ Página principal
+
+En esta captura se observa la pantalla inicial de la aplicación `CitasApp`. También se muestra la barra de navegación superior con las opciones principales del sistema: `Home`, `Citas`, `Medico` y `Paciente`.
+
+![Página principal de CitasApp](assets/1.png)
+
+---
+
+### 📅 Agenda de citas
+
+En esta imagen se muestra la sección de agenda de citas. La tabla presenta las citas médicas registradas con su fecha, hora, paciente, médico, motivo, estado y un enlace para ver más detalles.
+
+![Agenda de citas](assets/2.png)
+
+---
+
+### ➕ Formulario para agregar cita
+
+En esta captura se observa el formulario para agregar una nueva cita médica. El sistema permite seleccionar un paciente, elegir un médico, capturar la fecha, hora, motivo y estado de la cita antes de guardarla.
+
+![Formulario para agregar cita](assets/3.png)
+
 ⚙️ Funcionalidades
 
 Gestión de pacientes: permite visualizar pacientes registrados, agregar nuevos pacientes y consultar el detalle de cada uno.
