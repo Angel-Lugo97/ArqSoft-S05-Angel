@@ -1,13 +1,14 @@
 ﻿@model List<CitasApp.Models.Paciente>
 
+@{
+    ViewData["Title"] = "Pacientes";
+}
+
 <h1>Pacientes registrados</h1>
 
-<a asp-controller="Paciente" asp-action="Create">Agregar paciente</a>
+<a class="action-link" asp-controller="Paciente" asp-action="Create">Agregar paciente</a>
 
-<br />
-<br />
-
-<table border="1" cellpadding="8">
+<table>
     <tr>
         <th>Nombre</th>
         <th>Email</th>
@@ -22,7 +23,9 @@
             <td>@p.Email</td>
             <td>@p.Telefono</td>
             <td>
-                <a asp-controller="Paciente" asp-action="Detalle" asp-route-id="@p.Id">Ver detalle</a>
+                <a asp-controller="Paciente" asp-action="Detalle" asp-route-id="@p.Id">
+                    Ver detalle
+                </a>
             </td>
         </tr>
     }

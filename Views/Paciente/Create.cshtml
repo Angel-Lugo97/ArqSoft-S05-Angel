@@ -1,5 +1,9 @@
 @model CitasApp.Models.Paciente
 
+@{
+    ViewData["Title"] = "Agregar paciente";
+}
+
 <h1>Agregar paciente</h1>
 
 <form asp-action="Create" method="post">
@@ -36,4 +40,4 @@
 
 <br />
 
-<a asp-controller="Paciente" asp-action="Index">Regresar</a>
+<a class="action-link" asp-controller="Paciente" asp-action="Index">Regresar</a>

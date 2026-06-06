@@ -1,6 +1,8 @@
 @model CitasApp.Models.Cita
 
 @{
+    ViewData["Title"] = "Agregar cita";
+
     var pacientes = ViewBag.Pacientes as List<Paciente>;
     var medicos = ViewBag.Medicos as List<Medico>;
 }
@@ -69,4 +71,4 @@
 
 <br />
 
-<a asp-controller="Cita" asp-action="Index">Regresar</a>
+<a class="action-link" asp-controller="Cita" asp-action="Index">Regresar</a>

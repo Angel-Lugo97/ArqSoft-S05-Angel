@@ -1,8 +1,36 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero">
+    <h1>CitasApp</h1>
+
+    <p>
+        Sistema web para administrar pacientes, médicos y citas médicas.
+        La información se guarda de forma local usando archivos JSON.
+    </p>
+
+    <div class="hero-actions">
+        <a class="action-link" asp-controller="Cita" asp-action="Index">Ver agenda</a>
+        <a class="action-link" asp-controller="Cita" asp-action="Create">Agregar cita</a>
+        <a class="action-link" asp-controller="Paciente" asp-action="Index">Ver pacientes</a>
+        <a class="action-link" asp-controller="Medico" asp-action="Index">Ver médicos</a>
+    </div>
+</div>
+
+<div class="info-grid">
+    <div class="info-box">
+        <h3>Pacientes</h3>
+        <p>Consulta y registra pacientes dentro del sistema.</p>
+    </div>
+
+    <div class="info-box">
+        <h3>Médicos</h3>
+        <p>Administra médicos disponibles y sus especialidades.</p>
+    </div>
+
+    <div class="info-box">
+        <h3>Citas</h3>
+        <p>Crea citas relacionando pacientes, médicos, fecha y hora.</p>
+    </div>
 </div>

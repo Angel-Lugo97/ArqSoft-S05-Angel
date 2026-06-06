@@ -1,18 +1,17 @@
 ﻿@model List<CitasApp.Models.Cita>
 
 @{
+    ViewData["Title"] = "Agenda de citas";
+
     var pacientes = ViewBag.Pacientes as List<Paciente>;
     var medicos = ViewBag.Medicos as List<Medico>;
 }
 
 <h1>Agenda de citas</h1>
 
-<a asp-controller="Cita" asp-action="Create">Agregar cita</a>
+<a class="action-link" asp-controller="Cita" asp-action="Create">Agregar cita</a>
 
-<br />
-<br />
-
-<table border="2" cellpadding="9">
+<table>
     <tr>
         <th>Fecha</th>
         <th>Hora</th>
@@ -36,10 +35,10 @@
             <td>@c.Motivo</td>
             <td>@c.Estado</td>
             <td>
-                <a asp-controller="Cita" asp-action="PorPaciente" asp-route-pacienteId="@c.PacienteId">Ver detalles</a>
+                <a asp-controller="Cita" asp-action="PorPaciente" asp-route-pacienteId="@c.PacienteId">
+                    Ver detalles
+                </a>
             </td>
         </tr>
     }
 </table>
-
-<br />

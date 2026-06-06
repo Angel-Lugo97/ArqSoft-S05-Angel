@@ -1,5 +1,20 @@
+:root {
+  --salamander-black: #0b0f0c;
+  --salamander-dark: #101a13;
+  --salamander-panel: #17251b;
+  --salamander-green: #1f7a3a;
+  --salamander-green-light: #39a85a;
+  --salamander-orange: #f26a1b;
+  --salamander-gold: #d9a441;
+  --salamander-text: #f2f5ef;
+  --salamander-muted: #aeb8aa;
+  --salamander-border: rgba(57, 168, 90, 0.35);
+}
+
 html {
   font-size: 14px;
+  position: relative;
+  min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,24 +23,273 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+  min-height: 100vh;
+  margin-bottom: 80px;
+  color: var(--salamander-text);
+  background:
+          radial-gradient(circle at top left, rgba(31, 122, 58, 0.25), transparent 35%),
+          radial-gradient(circle at bottom right, rgba(242, 106, 27, 0.18), transparent 30%),
+          linear-gradient(135deg, var(--salamander-black), var(--salamander-dark));
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+main {
+  background: rgba(16, 26, 19, 0.88);
+  border: 1px solid var(--salamander-border);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.45);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+h1, h2, h3 {
+  color: var(--salamander-text);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+h1 {
+  border-left: 6px solid var(--salamander-orange);
+  padding-left: 14px;
+  margin-bottom: 24px;
+}
+
+p {
+  color: var(--salamander-muted);
+}
+
+a {
+  color: var(--salamander-green-light);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--salamander-orange);
+  text-decoration: none;
+}
+
+.navbar {
+  background: linear-gradient(90deg, #071008, #15351f) !important;
+  border-bottom: 2px solid var(--salamander-orange) !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.35);
+}
+
+.navbar-brand {
+  color: var(--salamander-text) !important;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.navbar-brand::before {
+  content: "🔥 ";
+}
+
+.navbar .nav-link {
+  color: var(--salamander-muted) !important;
+  font-weight: 700;
+  margin: 0 4px;
+  border-radius: 10px;
+  padding: 8px 14px !important;
+  transition: 0.2s ease;
+}
+
+.navbar .nav-link:hover {
+  color: #fff !important;
+  background: rgba(242, 106, 27, 0.18);
+}
+
+.navbar-toggler {
+  border-color: var(--salamander-border);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.container {
+  max-width: 1150px;
+}
+
+.btn,
+button,
+input[type="submit"] {
+  background: linear-gradient(135deg, var(--salamander-green), #145528);
+  color: white;
+  border: 1px solid var(--salamander-green-light);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+  background: linear-gradient(135deg, var(--salamander-orange), #b7430d);
+  border-color: var(--salamander-orange);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-danger-zone {
+  background: linear-gradient(135deg, var(--salamander-orange), #9c2f09);
+  border-color: var(--salamander-orange);
+}
+
+.action-link {
+  display: inline-block;
+  background: rgba(31, 122, 58, 0.24);
+  color: var(--salamander-text);
+  border: 1px solid var(--salamander-border);
+  border-radius: 10px;
+  padding: 9px 14px;
+  margin-bottom: 16px;
+}
+
+.action-link:hover {
+  background: rgba(242, 106, 27, 0.2);
+  color: white;
+  border-color: var(--salamander-orange);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--salamander-panel);
+  border: 1px solid var(--salamander-border);
+}
+
+table th {
+  background: linear-gradient(135deg, #1f7a3a, #124a24);
+  color: white;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+table td {
+  padding: 13px;
+  color: var(--salamander-text);
+  border-bottom: 1px solid rgba(57, 168, 90, 0.18);
+}
+
+table tr:hover td {
+  background: rgba(57, 168, 90, 0.08);
+}
+
+form {
+  background: var(--salamander-panel);
+  border: 1px solid var(--salamander-border);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 700px;
+}
+
+label {
+  display: block;
+  color: var(--salamander-gold);
+  font-weight: 800;
+  margin-bottom: 7px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  background: #0d140f;
+  color: var(--salamander-text);
+  border: 1px solid var(--salamander-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--salamander-orange);
+  box-shadow: 0 0 0 0.2rem rgba(242, 106, 27, 0.18);
+}
+
+.card-salamander {
+  background: var(--salamander-panel);
+  border: 1px solid var(--salamander-border);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.hero {
+  background:
+          linear-gradient(135deg, rgba(31, 122, 58, 0.25), rgba(242, 106, 27, 0.12)),
+          var(--salamander-panel);
+  border: 1px solid var(--salamander-border);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+}
+
+.hero h1 {
+  border-left: none;
+  padding-left: 0;
+  color: white;
+}
+
+.hero p {
+  max-width: 750px;
+  margin: 0 auto 25px auto;
+  color: var(--salamander-muted);
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+  margin-top: 25px;
+}
+
+.info-box {
+  background: rgba(11, 15, 12, 0.55);
+  border: 1px solid var(--salamander-border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.info-box h3 {
+  font-size: 1.1rem;
+  color: var(--salamander-gold);
+}
+
+.detail-box {
+  background: var(--salamander-panel);
+  border: 1px solid var(--salamander-border);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 700px;
+}
+
+.detail-box p {
+  font-size: 1.05rem;
+  color: var(--salamander-text);
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  background: #071008;
+  border-top: 1px solid var(--salamander-border) !important;
+  color: var(--salamander-muted) !important;
+}
+
+.text-muted {
+  color: var(--salamander-muted) !important;
 }
