@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+    <ItemGroup>
+      <ProjectReference Include="src\CitasApp.Application\CitasApp.Application.csproj" />
+      <ProjectReference Include="src\CitasApp.Infrastructure\CitasApp.Infrastructure.csproj" />
+      <ProjectReference Include="src\CitasApp.Domain\CitasApp.Domain.csproj" />
+    </ItemGroup>
+
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
