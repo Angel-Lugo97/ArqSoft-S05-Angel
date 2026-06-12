@@ -1,43 +1,45 @@
-﻿using CitasApp.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using CitasApp.Models;
-using Microsoft.AspNetCore.Mvc;
+using CitasApp.Interfaces;
 
-namespace Citas_App.Controllers
+namespace CitasApp.Controllers
 {
     public class CitaController : Controller
     {
-        private List<Paciente> Pacientes()
-        {
-            return DatosJson.Leer<Paciente>("Pacientes.json");
-        }
+        private readonly ICitaRepository _citaRepo;
+        private readonly IPacienteRepository _pacienteRepo;
+        private readonly IMedicoRepository _medicoRepo;
 
-        private List<Medico> Medicos()
+        public CitaController(
+            ICitaRepository citaRepo,
+            IPacienteRepository pacienteRepo,
+            IMedicoRepository medicoRepo)
         {
-            return DatosJson.Leer<Medico>("Medicos.json");
-        }
-
-        private List<Cita> Citas()
-        {
-            return DatosJson.Leer<Cita>("Citas.json");
+            _citaRepo = citaRepo;
+            _pacienteRepo = pacienteRepo;
+            _medicoRepo = medicoRepo;
         }
 
         public IActionResult Index()
         {
-            ViewBag.Pacientes = Pacientes();
-            ViewBag.Medicos = Medicos();
+            CargarPacientesYMedicos();
+            return View(_citaRepo.ObtenerTodos());
+        }
 
-            return View(Citas());
+        public IActionResult PorPaciente(int pacienteId)
+        {
+            CargarPacientesYMedicos();
+            return View(_citaRepo.ObtenerPorPaciente(pacienteId));
         }
 
         public IActionResult Create()
         {
-            ViewBag.Pacientes = Pacientes();
-            ViewBag.Medicos = Medicos();
+            CargarPacientesYMedicos();
 
             return View(new Cita
             {
                 Fecha = DateOnly.FromDateTime(DateTime.Today),
-                Hora = new TimeOnly(9, 0, 0),
+                Hora = new TimeOnly(9, 0),
                 Estado = "Pendiente"
             });
         }
@@ -46,25 +48,20 @@ namespace Citas_App.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Cita cita)
         {
-            var citas = Citas();
+            if (!ModelState.IsValid)
+            {
+                CargarPacientesYMedicos();
+                return View(cita);
+            }
 
-            cita.Id = citas.Any() ? citas.Max(c => c.Id) + 1 : 1;
-
-            citas.Add(cita);
-
-            DatosJson.Guardar("Citas.json", citas);
-
+            _citaRepo.Agregar(cita);
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult PorPaciente(int pacienteId)
+        private void CargarPacientesYMedicos()
         {
-            var citas = Citas().Where(c => c.PacienteId == pacienteId).ToList();
-
-            ViewBag.Pacientes = Pacientes();
-            ViewBag.Medicos = Medicos();
-
-            return View(citas);
+            ViewBag.Pacientes = _pacienteRepo.ObtenerTodos();
+            ViewBag.Medicos = _medicoRepo.ObtenerTodos();
         }
     }
 }
