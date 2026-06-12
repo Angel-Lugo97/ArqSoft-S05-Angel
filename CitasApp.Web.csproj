@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <ItemGroup>
-      <ProjectReference Include="src\CitasApp.Application\CitasApp.Application.csproj" />
       <ProjectReference Include="src\CitasApp.Infrastructure\CitasApp.Infrastructure.csproj" />
       <ProjectReference Include="src\CitasApp.Domain\CitasApp.Domain.csproj" />
     </ItemGroup>
@@ -12,5 +11,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     </PropertyGroup>
+    <ItemGroup>
+        <Compile Remove="src/**/*.cs" />
+        <Content Remove="src/**" />
+        <None Remove="src/**" />
+        <EmbeddedResource Remove="src/**" />
+    </ItemGroup>
 
 </Project>

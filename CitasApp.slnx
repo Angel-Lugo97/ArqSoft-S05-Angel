@@ -4,5 +4,5 @@
     <Project Path="src/CitasApp.Domain/CitasApp.Domain.csproj" />
     <Project Path="src/CitasApp.Infrastructure/CitasApp.Infrastructure.csproj" />
   </Folder>
-  <Project Path="CitasApp.csproj" />
+  <Project Path="CitasApp.Web.csproj" />
 </Solution>
