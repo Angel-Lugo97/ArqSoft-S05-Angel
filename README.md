@@ -2,7 +2,7 @@
 
 Este proyecto es una aplicación web desarrollada con **C#, ASP.NET Core MVC y .NET 10**. La aplicación permite registrar pacientes, registrar médicos, crear citas médicas, consultar la agenda general y ver las citas asociadas a cada paciente.
 
-La intención principal del proyecto fue construir una aplicación funcional usando el patrón **MVC**, almacenamiento local en archivos **JSON** y vistas Razor para mostrar la información de manera sencilla dentro del navegador.
+La intención principal del proyecto fue construir una aplicación funcional usando el patrón **MVC**, vistas Razor y una persistencia local intercambiable mediante repositorios **JSON**, **CSV** y **SQLite**. Actualmente el proyecto puede trabajar con archivos CSV desde `wwwroot/data`, manteniendo la opción de cambiar a JSON o SQLite desde `Program.cs`.
 
 ---
 
@@ -27,10 +27,11 @@ Las restricciones principales del proyecto son:
 
 * Las citas deben estar relacionadas con un paciente registrado.
 * Las citas deben estar relacionadas con un médico registrado.
-* Los pacientes se guardan dentro del archivo `Pacientes.json`.
-* Los médicos se guardan dentro del archivo `Medicos.json`.
-* Las citas se guardan dentro del archivo `Citas.json`.
-* La información se conserva usando archivos JSON locales, sin utilizar una base de datos externa.
+* Los pacientes pueden guardarse usando repositorios JSON, CSV o SQLite.
+* Los médicos pueden guardarse usando repositorios JSON, CSV o SQLite.
+* Las citas pueden guardarse usando repositorios JSON, CSV o SQLite.
+* Actualmente la anexión nueva usa archivos CSV dentro de `wwwroot/data`.
+* La persistencia se controla desde `Program.cs`, donde se elige qué adapter queda activo.
 * La agenda muestra los nombres de pacientes y médicos tomando como referencia sus identificadores.
 
 ---
@@ -43,7 +44,7 @@ Las restricciones principales del proyecto son:
 * **Patrón:** MVC
 * **Vistas:** Razor Views
 * **Estilos:** HTML, CSS y Bootstrap
-* **Persistencia:** Archivos JSON
+* **Persistencia:** JSON, CSV y SQLite mediante repositorios
 * **IDE recomendado:** JetBrains Rider
 * **Sistema compatible:** Arch Linux
 * **Herramientas:** .NET SDK, Git y GitHub
@@ -57,7 +58,8 @@ Durante el desarrollo se presentaron varios retos importantes:
 * Organizar el proyecto usando el patrón MVC.
 * Separar correctamente los modelos, controladores, vistas y datos.
 * Crear una forma sencilla de guardar información sin usar base de datos.
-* Leer y escribir archivos JSON desde la carpeta `Data`.
+* Leer y escribir información usando repositorios locales.
+* Mantener la compatibilidad con JSON y agregar nuevos repositorios para CSV y SQLite.
 * Relacionar las citas con pacientes y médicos mediante sus identificadores.
 * Mostrar en la agenda el nombre del paciente y del médico, en lugar de solo mostrar sus IDs.
 * Crear formularios para agregar pacientes, médicos y citas.
@@ -72,66 +74,136 @@ Durante el desarrollo se presentaron varios retos importantes:
 
 ```text
 ArqSoft-S05-Angel/
+│
+├── Program.cs
 ├── CitasApp.slnx
 ├── CitasApp.csproj
-├── Program.cs
 ├── appsettings.json
 ├── appsettings.Development.json
+│
 ├── Controllers/
 │   ├── CitaController.cs
 │   ├── HomeController.cs
 │   ├── MedicoController.cs
 │   └── PacienteController.cs
+│
 ├── Models/
 │   ├── Cita.cs
 │   ├── ErrorViewModel.cs
 │   ├── Medico.cs
 │   └── Paciente.cs
-├── Data/
-│   ├── Citas.json
-│   ├── DatosJson.cs
-│   ├── Medicos.json
-│   └── Pacientes.json
+│
 ├── Views/
 │   ├── Cita/
-│   │   ├── Create.cshtml
-│   │   ├── Index.cshtml
-│   │   └── PorPaciente.cshtml
 │   ├── Home/
-│   │   ├── Index.cshtml
-│   │   └── Privacy.cshtml
 │   ├── Medico/
-│   │   ├── Create.cshtml
-│   │   ├── Detalle.cshtml
-│   │   └── Index.cshtml
 │   ├── Paciente/
-│   │   ├── Create.cshtml
-│   │   ├── Detalle.cshtml
-│   │   └── Index.cshtml
-│   ├── Shared/
-│   │   ├── Error.cshtml
-│   │   ├── _Layout.cshtml
-│   │   ├── _Layout.cshtml.css
-│   │   └── _ValidationScriptsPartial.cshtml
-│   ├── _ViewImports.cshtml
-│   └── _ViewStart.cshtml
+│   └── Shared/
+│
 ├── wwwroot/
 │   ├── css/
-│   │   └── site.css
 │   ├── js/
-│   │   └── site.js
 │   ├── lib/
-│   │   ├── bootstrap/
-│   │   ├── jquery/
-│   │   ├── jquery-validation/
-│   │   └── jquery-validation-unobtrusive/
-│   └── favicon.ico
+│   └── data/
+│       ├── pacientes.csv
+│       ├── medicos.csv
+│       └── citas.csv
+│
+├── src/
+│   └── CitasApp.Infrastructure/
+│       └── Repositories/
+│           ├── JsonPacienteRepository.cs
+│           ├── JsonMedicoRepository.cs
+│           ├── JsonCitaRepository.cs
+│           ├── CsvPacienteRepository.cs
+│           ├── CsvMedicoRepository.cs
+│           ├── CsvCitaRepository.cs
+│           ├── SqlitePacienteRepository.cs
+│           ├── SqliteMedicoRepository.cs
+│           └── SqliteCitaRepository.cs
+│
 ├── assets/
 │   ├── 1.png
 │   ├── 2.png
 │   └── 3.png
+│
 └── README.md
 ```
+
+---
+
+## 🔌 Nueva Anexión: Repositorios JSON, CSV y SQLite
+
+Se agregó una nueva organización para que el proyecto pueda trabajar con diferentes formas de almacenamiento sin cambiar la lógica principal de la aplicación.
+
+La idea es que los controladores sigan usando las mismas interfaces, mientras que los repositorios se encargan de decidir de dónde viene la información:
+
+```text
+Controladores
+    ↓
+Interfaces
+    ↓
+Repositorios
+    ↓
+JSON / CSV / SQLite
+```
+
+Con esta anexión se agregaron tres grupos de repositorios:
+
+```text
+JsonPacienteRepository.cs
+JsonMedicoRepository.cs
+JsonCitaRepository.cs
+
+CsvPacienteRepository.cs
+CsvMedicoRepository.cs
+CsvCitaRepository.cs
+
+SqlitePacienteRepository.cs
+SqliteMedicoRepository.cs
+SqliteCitaRepository.cs
+```
+
+Actualmente el bloque activo en `Program.cs` es el de **CSV**, por lo que los datos se leen y se guardan en:
+
+```text
+wwwroot/data/pacientes.csv
+wwwroot/data/medicos.csv
+wwwroot/data/citas.csv
+```
+
+Esto permite que el proyecto siga siendo sencillo para una práctica escolar, pero al mismo tiempo queda preparado para cambiar la persistencia a JSON o SQLite sin modificar los controladores.
+
+### Selección del adapter en `Program.cs`
+
+En `Program.cs` se configuran las rutas de los archivos CSV y también la ruta de SQLite:
+
+```csharp
+var dataFolder = Path.Combine(builder.Environment.WebRootPath, "data");
+Directory.CreateDirectory(dataFolder);
+
+var csvPacientes = Path.Combine(dataFolder, "pacientes.csv");
+var csvMedicos   = Path.Combine(dataFolder, "medicos.csv");
+var csvCitas     = Path.Combine(dataFolder, "citas.csv");
+
+var sqlitePath   = Path.Combine(dataFolder, "citasapp.db");
+```
+
+Después se elige qué repositorio usar. En este caso, el bloque activo es el de CSV:
+
+```csharp
+builder.Services.AddSingleton<IPacienteRepository>(_ => new CsvPacienteRepository(csvPacientes));
+builder.Services.AddSingleton<IMedicoRepository>  (_ => new CsvMedicoRepository(csvMedicos));
+builder.Services.AddSingleton<ICitaRepository>    (_ => new CsvCitaRepository(csvCitas));
+```
+
+Si se desea usar SQLite, se debe comentar el bloque CSV y activar el bloque SQLite. Para SQLite también se requiere instalar el paquete correspondiente:
+
+```bash
+dotnet add package Microsoft.Data.Sqlite
+```
+
+
 ---
 ## 📸 Evidencias de Ejecución
 
@@ -171,7 +243,7 @@ Agregar cita: permite crear una nueva cita seleccionando paciente, médico, fech
 
 Citas por paciente: permite ver las citas relacionadas con un paciente específico.
 
-Persistencia en JSON: los pacientes, médicos y citas se guardan en archivos JSON locales dentro de la carpeta Data.
+Persistencia intercambiable: los pacientes, médicos y citas pueden guardarse usando JSON, CSV o SQLite. Actualmente se usa CSV en `wwwroot/data`.
 
 Navegación principal: el menú superior permite entrar a Home, Citas, Medico y Paciente.
 
@@ -187,6 +259,9 @@ Se creó una aplicación MVC para organizar una agenda de citas médicas. Entre 
 ```
 - Se crearon los modelos Paciente, Medico y Cita.
 - Se creó la clase DatosJson para leer y guardar información en archivos JSON.
+- Se agregaron repositorios CSV para pacientes, médicos y citas.
+- Se agregaron repositorios SQLite para pacientes, médicos y citas.
+- Se configuró `Program.cs` para poder elegir entre JSON, CSV o SQLite.
 - Se agregaron archivos JSON para pacientes, médicos y citas.
 - Se creó el controlador PacienteController para listar, agregar y ver detalles de pacientes.
 - Se creó el controlador MedicoController para listar, agregar y ver detalles de médicos.
@@ -208,7 +283,7 @@ Se creó una aplicación MVC para organizar una agenda de citas médicas. Entre 
 7- En la sección de citas se muestra la agenda general.
 8- Para crear una cita se selecciona un paciente y un médico registrados.
 9- Después se captura la fecha, hora, motivo y estado de la cita.
-10- Al guardar, la información se escribe en el archivo JSON correspondiente.
+10- Al guardar, la información se escribe en el archivo correspondiente según el adapter activo. Actualmente se guarda en CSV dentro de `wwwroot/data`.
 11- Desde el detalle de un paciente se pueden consultar sus citas.
 
 ```
@@ -432,18 +507,18 @@ Como mejora futura, se pueden agregar validaciones más estrictas con anotacione
 
 [ ] Mejorar el diseño visual de las tablas y formularios.
 
-[ ] Migrar la persistencia de JSON a una base de datos como SQLite o SQL Server.
+[ ] Activar SQLite como adapter principal cuando se quiera trabajar con base de datos local.
 
 [ ] Unificar los namespaces del proyecto para mantener una estructura más limpia.
 ```
 🏁 Conclusión
 
-Este proyecto permitió aplicar conceptos de arquitectura de software en una aplicación web real usando ASP.NET Core MVC. Se trabajó con modelos, controladores, vistas y persistencia local mediante archivos JSON.
+Este proyecto permitió aplicar conceptos de arquitectura de software en una aplicación web real usando ASP.NET Core MVC. Se trabajó con modelos, controladores, vistas, interfaces y repositorios para manejar la persistencia local mediante JSON, CSV y SQLite.
 
 Además, el proyecto ayudó a entender cómo se relacionan distintas entidades dentro de una aplicación, ya que una cita necesita estar conectada con un paciente y un médico. Aunque todavía se pueden agregar mejoras como validaciones, edición y eliminación de registros, la base principal del sistema ya permite administrar una agenda médica sencilla y funcional.
 
 Cláusula de IA
 ```
 Yo Angel Abraham Lugo Saenz declaro que utilicé IA,
-para realizar mi README, apoyarme en la redacción del documento y explicar de forma más clara la estructura y funcionamiento de mi proyecto de citas médicas.
+para realizar mi README, resolver problemas que tuve en al comunicacion de las diferentres capasa de mi codigo y apoyarme en la redacción del documento y explicar de forma más clara la estructura y funcionamiento de mi proyecto de citas médicas.
 ```
