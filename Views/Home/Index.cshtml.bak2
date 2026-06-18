@@ -1,0 +1,107 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Panel de pruebas";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CitasApp - Panel de pruebas</title>
+    <link rel="stylesheet" href="~/css/panel-pruebas.css" />
+</head>
+<body>
+
+<div class="page">
+
+    <header class="top">
+        <div>
+            <h1>CitasApp</h1>
+            <p>Panel simple para probar endpoints GET</p>
+        </div>
+
+        <div class="tag">
+            Pruebas manuales
+        </div>
+    </header>
+
+    <main class="grid">
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Pacientes</h2>
+                <span>/api/pacientes</span>
+            </div>
+
+            <div class="controls">
+                <button onclick="listarPacientes()">Listar todos</button>
+                <input id="pacienteId" type="number" value="1" />
+                <button onclick="buscarPaciente()">Buscar por id</button>
+            </div>
+
+            <div id="statusPacientes" class="status">-</div>
+            <pre id="salidaPacientes">-</pre>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Médicos</h2>
+                <span>/api/medicos</span>
+            </div>
+
+            <div class="controls">
+                <button onclick="listarMedicos()">Listar todos</button>
+                <input id="medicoId" type="number" value="1" />
+                <button onclick="buscarMedico()">Buscar por id</button>
+            </div>
+
+            <div id="statusMedicos" class="status">-</div>
+            <pre id="salidaMedicos">-</pre>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Citas</h2>
+                <span>/api/citas</span>
+            </div>
+
+            <div class="controls">
+                <button onclick="listarCitas()">Listar todas</button>
+                <input id="pacienteCitaId" type="number" value="1" />
+                <button onclick="buscarCitasPorPaciente()">Por paciente</button>
+            </div>
+
+            <div id="statusCitas" class="status">-</div>
+            <pre id="salidaCitas">-</pre>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Calculadora</h2>
+                <span>/api/calculadora</span>
+            </div>
+
+            <div class="controls">
+                <input id="numeroA" type="number" value="10" placeholder="a" />
+                <input id="numeroB" type="number" value="5" placeholder="b" />
+            </div>
+
+            <div class="botones-calculadora">
+                <button onclick="calcular('sumar')">Sumar</button>
+                <button onclick="calcular('restar')">Restar</button>
+                <button onclick="calcular('multiplicar')">Multiplicar</button>
+                <button onclick="calcular('dividir')">Dividir</button>
+            </div>
+
+            <div id="statusCalculadora" class="status">-</div>
+            <pre id="salidaCalculadora">-</pre>
+        </section>
+
+    </main>
+
+</div>
+
+<script src="~/js/panel-pruebas.js"></script>
+</body>
+</html>
