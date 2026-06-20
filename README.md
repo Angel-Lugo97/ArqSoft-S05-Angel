@@ -1,8 +1,10 @@
 # CitasApp - Sistema de Gestión de Citas Médicas
 
-Este proyecto es una aplicación web desarrollada con **C#, ASP.NET Core MVC y .NET 10**. La aplicación permite registrar pacientes, registrar médicos, crear citas médicas, consultar la agenda general y ver las citas asociadas a cada paciente.
+Este proyecto es una aplicación web desarrollada con **C#, ASP.NET Core MVC y .NET 10**. Su objetivo principal es administrar citas médicas de manera sencilla, permitiendo consultar pacientes, médicos y citas dentro de una agenda básica.
 
-La intención principal del proyecto fue construir una aplicación funcional usando el patrón **MVC**, vistas Razor y una persistencia local intercambiable mediante repositorios **JSON**, **CSV** y **SQLite**. Actualmente el proyecto puede trabajar con archivos CSV desde `wwwroot/data`, manteniendo la opción de cambiar a JSON o SQLite desde `Program.cs`.
+El proyecto también incluye una **API REST separada**, servicios de aplicación, modelos de dominio, interfaces y repositorios para manejar la persistencia de datos mediante **CSV**, **JSON** y **SQLite**.
+
+Actualmente, la aplicación Web MVC trabaja principalmente con archivos **CSV** ubicados en `wwwroot/data`, mientras que el proyecto `CitasApp.Api` utiliza archivos **JSON** ubicados en su carpeta `Data`.
 
 ---
 
@@ -15,36 +17,52 @@ La intención principal del proyecto fue construir una aplicación funcional usa
 | **Universidad** | Tecnológico de Software |
 | **Profesor** | Jorge Javier Pedroza Romero |
 | **Materia** | Arquitectura de Software |
-| **Tarea** | Sistema de citas médicas en ASP.NET Core MVC |
+| **Tarea** | Sistema de citas médicas en ASP.NET Core MVC y API |
 
 ---
 
 ## 📝 Descripción General
 
-La aplicación consiste en una agenda médica web donde se pueden administrar tres partes principales: pacientes, médicos y citas. El sistema permite consultar los registros guardados, agregar nuevos datos y relacionar una cita con un paciente y un médico.
+CitasApp es un sistema de citas médicas donde se pueden administrar tres elementos principales:
+
+* Pacientes.
+* Médicos.
+* Citas médicas.
+
+La aplicación permite registrar pacientes, registrar médicos, crear citas y consultar la agenda general. Cada cita se relaciona con un paciente y con un médico mediante sus identificadores.
+
+El proyecto está organizado en varias capas para separar mejor las responsabilidades del sistema:
+
+* **CitasApp.Web:** aplicación principal con MVC, Razor Views y panel de pruebas.
+* **CitasApp.Api:** API REST separada para consultar datos mediante endpoints.
+* **CitasApp.Domain:** modelos e interfaces principales del sistema.
+* **CitasApp.Application:** servicios de aplicación.
+* **CitasApp.Infrastructure:** repositorios para CSV, JSON y SQLite.
 
 Las restricciones principales del proyecto son:
 
 * Las citas deben estar relacionadas con un paciente registrado.
 * Las citas deben estar relacionadas con un médico registrado.
-* Los pacientes pueden guardarse usando repositorios JSON, CSV o SQLite.
-* Los médicos pueden guardarse usando repositorios JSON, CSV o SQLite.
-* Las citas pueden guardarse usando repositorios JSON, CSV o SQLite.
-* Actualmente la anexión nueva usa archivos CSV dentro de `wwwroot/data`.
-* La persistencia se controla desde `Program.cs`, donde se elige qué adapter queda activo.
-* La agenda muestra los nombres de pacientes y médicos tomando como referencia sus identificadores.
+* Los pacientes, médicos y citas pueden consultarse desde la aplicación Web.
+* La Web MVC usa repositorios CSV como persistencia activa.
+* La API separada usa repositorios JSON.
+* Los repositorios SQLite quedan disponibles como opción de persistencia local.
+* La lógica de acceso a datos se maneja mediante interfaces.
+* La agenda muestra los nombres de pacientes y médicos usando sus IDs.
 
 ---
 
 ## 🚀 Tecnologías Utilizadas
 
 * **Lenguaje:** C#
-* **Framework:** ASP.NET Core MVC
+* **Framework Web:** ASP.NET Core MVC
+* **API:** ASP.NET Core Web API
 * **Versión de .NET:** .NET 10
-* **Patrón:** MVC
 * **Vistas:** Razor Views
-* **Estilos:** HTML, CSS y Bootstrap
-* **Persistencia:** JSON, CSV y SQLite mediante repositorios
+* **Frontend:** HTML, CSS, JavaScript y Bootstrap
+* **Persistencia:** CSV, JSON y SQLite
+* **Base local opcional:** SQLite con `Microsoft.Data.Sqlite`
+* **Arquitectura:** Separación por capas
 * **IDE recomendado:** JetBrains Rider
 * **Sistema compatible:** Arch Linux
 * **Herramientas:** .NET SDK, Git y GitHub
@@ -55,18 +73,20 @@ Las restricciones principales del proyecto son:
 
 Durante el desarrollo se presentaron varios retos importantes:
 
-* Organizar el proyecto usando el patrón MVC.
-* Separar correctamente los modelos, controladores, vistas y datos.
-* Crear una forma sencilla de guardar información sin usar base de datos.
-* Leer y escribir información usando repositorios locales.
-* Mantener la compatibilidad con JSON y agregar nuevos repositorios para CSV y SQLite.
-* Relacionar las citas con pacientes y médicos mediante sus identificadores.
-* Mostrar en la agenda el nombre del paciente y del médico, en lugar de solo mostrar sus IDs.
-* Crear formularios para agregar pacientes, médicos y citas.
-* Agregar navegación entre las secciones principales del sistema.
-* Crear una sección para consultar las citas de un paciente específico.
-* Mantener el proyecto funcionando en .NET 10 y compatible con JetBrains Rider en Arch Linux.
-* Agregar imágenes de evidencia dentro de la carpeta `assets`.
+* Organizar el proyecto separando Web, API, dominio, aplicación e infraestructura.
+* Crear modelos para representar pacientes, médicos y citas.
+* Crear interfaces para no depender directamente de una sola forma de almacenamiento.
+* Implementar repositorios para archivos CSV.
+* Implementar repositorios para archivos JSON.
+* Agregar repositorios SQLite como alternativa de persistencia.
+* Hacer que los controladores MVC usaran repositorios mediante inyección de dependencias.
+* Crear una API separada usando servicios de aplicación.
+* Mostrar nombres de pacientes y médicos en lugar de mostrar solamente sus IDs.
+* Crear vistas Razor para listar, agregar y consultar registros.
+* Agregar un panel de pruebas con JavaScript para consultar endpoints GET.
+* Mantener la estructura del proyecto funcionando con varios `.csproj`.
+* Separar los archivos de datos usados por la Web y por la API.
+* Mantener el proyecto compatible con .NET 10 en Arch Linux.
 
 ---
 
@@ -76,40 +96,89 @@ Durante el desarrollo se presentaron varios retos importantes:
 ArqSoft-S05-Angel/
 │
 ├── Program.cs
+├── CitasApp.Web.csproj
+├── CitasApp.sln
 ├── CitasApp.slnx
-├── CitasApp.csproj
+├── Directory.Build.props
 ├── appsettings.json
 ├── appsettings.Development.json
 │
 ├── Controllers/
-│   ├── CitaController.cs
 │   ├── HomeController.cs
+│   ├── PacienteController.cs
 │   ├── MedicoController.cs
-│   └── PacienteController.cs
-│
-├── Models/
-│   ├── Cita.cs
-│   ├── ErrorViewModel.cs
-│   ├── Medico.cs
-│   └── Paciente.cs
+│   ├── CitaController.cs
+│   ├── ApiPacientesController.cs
+│   ├── ApiMedicosController.cs
+│   ├── ApiCitasController.cs
+│   └── CalculadoraController.cs
 │
 ├── Views/
-│   ├── Cita/
 │   ├── Home/
-│   ├── Medico/
+│   │   ├── Index.cshtml
+│   │   └── Privacy.cshtml
+│   │
 │   ├── Paciente/
+│   │   ├── Index.cshtml
+│   │   ├── Create.cshtml
+│   │   └── Detalle.cshtml
+│   │
+│   ├── Medico/
+│   │   ├── Index.cshtml
+│   │   ├── Create.cshtml
+│   │   └── Detalle.cshtml
+│   │
+│   ├── Cita/
+│   │   ├── Index.cshtml
+│   │   ├── Create.cshtml
+│   │   └── PorPaciente.cshtml
+│   │
 │   └── Shared/
+│       ├── _Layout.cshtml
+│       ├── Error.cshtml
+│       └── _ValidationScriptsPartial.cshtml
 │
 ├── wwwroot/
 │   ├── css/
+│   │   ├── site.css
+│   │   └── panel-pruebas.css
+│   │
 │   ├── js/
+│   │   ├── site.js
+│   │   └── panel-pruebas.js
+│   │
 │   ├── lib/
 │   └── data/
 │       ├── pacientes.csv
 │       ├── medicos.csv
 │       └── citas.csv
 │
+├── Data/
+│   ├── Pacientes.json
+│   ├── Medicos.json
+│   ├── Citas.json
+│   └── DatosJson.cs
+│
 ├── src/
+│   ├── CitasApp.Domain/
+│   │   ├── Models/
+│   │   │   ├── Paciente.cs
+│   │   │   ├── Medico.cs
+│   │   │   ├── Cita.cs
+│   │   │   ├── CitaJson.cs
+│   │   │   └── ErrorViewModel.cs
+│   │   │
+│   │   └── Interfaces/
+│   │       ├── IPacienteRepository.cs
+│   │       ├── IMedicoRepository.cs
+│   │       └── ICitaRepository.cs
+│   │
+│   ├── CitasApp.Application/
+│   │   └── Services/
+│   │       ├── PacienteService.cs
+│   │       ├── MedicoService.cs
+│   │       └── CitaService.cs
+│   │
 │   └── CitasApp.Infrastructure/
 │       └── Repositories/
 │           ├── JsonPacienteRepository.cs
@@ -122,6 +191,20 @@ ArqSoft-S05-Angel/
 │           ├── SqliteMedicoRepository.cs
 │           └── SqliteCitaRepository.cs
 │
+├── CitasApp.Api/
+│   ├── Program.cs
+│   ├── CitasApp.Api.csproj
+│   ├── Controllers/
+│   │   ├── PacientesController.cs
+│   │   ├── MedicosController.cs
+│   │   ├── CitasController.cs
+│   │   └── CalculadoraController.cs
+│   │
+│   └── Data/
+│       ├── Pacientes.json
+│       ├── Medicos.json
+│       └── Citas.json
+│
 ├── assets/
 │   ├── 1.png
 │   ├── 2.png
@@ -132,39 +215,27 @@ ArqSoft-S05-Angel/
 
 ---
 
-## 🔌 Nueva Anexión: Repositorios JSON, CSV y SQLite
+## 🔌 Nueva Organización: Web MVC, API y Repositorios
 
-Se agregó una nueva organización para que el proyecto pueda trabajar con diferentes formas de almacenamiento sin cambiar la lógica principal de la aplicación.
+El proyecto no solamente tiene una aplicación MVC, también incluye una API separada y una capa de infraestructura para manejar distintos tipos de almacenamiento.
 
-La idea es que los controladores sigan usando las mismas interfaces, mientras que los repositorios se encargan de decidir de dónde viene la información:
+La idea general es que el sistema no dependa directamente de un solo archivo o base de datos, sino de interfaces que pueden ser implementadas por distintos repositorios.
 
-```text
-Controladores
-    ↓
-Interfaces
-    ↓
-Repositorios
-    ↓
-JSON / CSV / SQLite
-```
-
-Con esta anexión se agregaron tres grupos de repositorios:
+### Flujo principal de la Web MVC
 
 ```text
-JsonPacienteRepository.cs
-JsonMedicoRepository.cs
-JsonCitaRepository.cs
-
-CsvPacienteRepository.cs
-CsvMedicoRepository.cs
-CsvCitaRepository.cs
-
-SqlitePacienteRepository.cs
-SqliteMedicoRepository.cs
-SqliteCitaRepository.cs
+Vistas Razor
+    ↓
+Controladores MVC
+    ↓
+Interfaces del dominio
+    ↓
+Repositorios CSV
+    ↓
+wwwroot/data
 ```
 
-Actualmente el bloque activo en `Program.cs` es el de **CSV**, por lo que los datos se leen y se guardan en:
+La aplicación Web MVC usa actualmente archivos CSV:
 
 ```text
 wwwroot/data/pacientes.csv
@@ -172,46 +243,337 @@ wwwroot/data/medicos.csv
 wwwroot/data/citas.csv
 ```
 
-Esto permite que el proyecto siga siendo sencillo para una práctica escolar, pero al mismo tiempo queda preparado para cambiar la persistencia a JSON o SQLite sin modificar los controladores.
+### Flujo principal de la API
 
-### Selección del adapter en `Program.cs`
-
-En `Program.cs` se configuran las rutas de los archivos CSV y también la ruta de SQLite:
-
-```csharp
-var dataFolder = Path.Combine(builder.Environment.WebRootPath, "data");
-Directory.CreateDirectory(dataFolder);
-
-var csvPacientes = Path.Combine(dataFolder, "pacientes.csv");
-var csvMedicos   = Path.Combine(dataFolder, "medicos.csv");
-var csvCitas     = Path.Combine(dataFolder, "citas.csv");
-
-var sqlitePath   = Path.Combine(dataFolder, "citasapp.db");
+```text
+Endpoints API
+    ↓
+Servicios de aplicación
+    ↓
+Interfaces del dominio
+    ↓
+Repositorios JSON
+    ↓
+Data
 ```
 
-Después se elige qué repositorio usar. En este caso, el bloque activo es el de CSV:
+La API separada usa archivos JSON:
 
-```csharp
-builder.Services.AddSingleton<IPacienteRepository>(_ => new CsvPacienteRepository(csvPacientes));
-builder.Services.AddSingleton<IMedicoRepository>  (_ => new CsvMedicoRepository(csvMedicos));
-builder.Services.AddSingleton<ICitaRepository>    (_ => new CsvCitaRepository(csvCitas));
+```text
+CitasApp.Api/Data/Pacientes.json
+CitasApp.Api/Data/Medicos.json
+CitasApp.Api/Data/Citas.json
 ```
 
-Si se desea usar SQLite, se debe comentar el bloque CSV y activar el bloque SQLite. Para SQLite también se requiere instalar el paquete correspondiente:
+### Repositorios disponibles
 
-```bash
-dotnet add package Microsoft.Data.Sqlite
+```text
+CSV:
+- CsvPacienteRepository.cs
+- CsvMedicoRepository.cs
+- CsvCitaRepository.cs
+
+JSON:
+- JsonPacienteRepository.cs
+- JsonMedicoRepository.cs
+- JsonCitaRepository.cs
+
+SQLite:
+- SqlitePacienteRepository.cs
+- SqliteMedicoRepository.cs
+- SqliteCitaRepository.cs
 ```
-
 
 ---
+
+## ⚙️ Funcionalidades
+
+### Gestión de pacientes
+
+Permite visualizar pacientes registrados, agregar nuevos pacientes y consultar el detalle de cada paciente.
+
+### Gestión de médicos
+
+Permite visualizar médicos disponibles, agregar nuevos médicos y consultar información como especialidad y número de licencia.
+
+### Gestión de citas
+
+Permite consultar la agenda general de citas médicas, mostrando fecha, hora, paciente, médico, motivo y estado.
+
+### Agregar cita
+
+Permite crear una nueva cita seleccionando un paciente, un médico, una fecha, una hora, un motivo y un estado.
+
+### Citas por paciente
+
+Permite consultar las citas relacionadas con un paciente específico.
+
+### Panel de pruebas
+
+La página principal funciona como un panel para probar endpoints GET de la API interna de la Web MVC.
+
+Desde este panel se pueden probar:
+
+```text
+/api/pacientes
+/api/pacientes/{id}
+
+/api/medicos
+/api/medicos/{id}
+
+/api/citas
+/api/citas/por-paciente/{pacienteId}
+
+/api/calculadora/sumar
+/api/calculadora/restar
+/api/calculadora/multiplicar
+/api/calculadora/dividir
+```
+
+### Calculadora API
+
+Se agregó una calculadora sencilla para probar endpoints GET con parámetros.
+
+Operaciones disponibles:
+
+```text
+sumar
+restar
+multiplicar
+dividir
+```
+
+---
+
+## ❓ ¿De qué trata?
+
+El proyecto trata de una aplicación para administrar citas médicas. La idea principal es registrar pacientes y médicos, para después crear citas relacionadas con ambos.
+
+La aplicación funciona como una agenda médica sencilla donde se puede consultar quién tiene una cita, con qué médico, en qué fecha, a qué hora, por qué motivo y con qué estado.
+
+También se agregó una API para consultar datos desde endpoints, además de un panel visual que permite probar esas rutas desde el navegador sin usar herramientas externas.
+
+---
+
+## 🧩 ¿Qué hicimos?
+
+Se creó una aplicación de citas médicas organizada en varias partes:
+
+```text
+- Se crearon los modelos Paciente, Medico, Cita y CitaJson.
+- Se crearon interfaces para pacientes, médicos y citas.
+- Se creó la capa Domain para modelos e interfaces.
+- Se creó la capa Application para servicios.
+- Se creó la capa Infrastructure para repositorios.
+- Se agregaron repositorios CSV para pacientes, médicos y citas.
+- Se agregaron repositorios JSON para pacientes, médicos y citas.
+- Se agregaron repositorios SQLite como alternativa de almacenamiento.
+- Se configuró Program.cs de la Web para usar CSV.
+- Se configuró Program.cs de la API para usar JSON.
+- Se crearon controladores MVC para pacientes, médicos y citas.
+- Se crearon controladores API dentro de la Web para el panel de pruebas.
+- Se creó una API separada en CitasApp.Api.
+- Se agregaron servicios PacienteService, MedicoService y CitaService.
+- Se crearon vistas Razor para listar, agregar y consultar detalles.
+- Se agregó navegación principal en _Layout.cshtml.
+- Se agregaron archivos CSV dentro de wwwroot/data.
+- Se agregaron archivos JSON dentro de Data.
+- Se creó un panel de pruebas usando HTML, CSS y JavaScript.
+- Se agregaron estilos personalizados para la interfaz.
+- Se agregaron capturas de evidencia dentro de assets.
+```
+
+---
+
+## ▶️ ¿Cómo funciona?
+
+```text
+1. La aplicación Web inicia desde Program.cs.
+2. Program.cs registra los repositorios CSV mediante inyección de dependencias.
+3. Los controladores MVC reciben las interfaces de los repositorios.
+4. El usuario entra a las secciones de Pacientes, Médicos o Citas.
+5. Cada controlador consulta la información desde su repositorio.
+6. Los repositorios CSV leen los archivos ubicados en wwwroot/data.
+7. Las vistas Razor muestran la información en tablas o formularios.
+8. Para crear una cita, se selecciona un paciente y un médico ya registrados.
+9. Al guardar una cita, el repositorio genera un nuevo ID.
+10. La información se escribe nuevamente en el archivo CSV correspondiente.
+11. El panel de pruebas usa JavaScript para hacer peticiones fetch a los endpoints.
+12. La API separada trabaja con servicios de aplicación y repositorios JSON.
+```
+
+---
+
+## 🛠️ Comandos de Uso
+
+### Restaurar dependencias
+
+```bash
+dotnet restore
+```
+
+También se puede restaurar usando la solución:
+
+```bash
+dotnet restore CitasApp.sln
+```
+
+---
+
+### Compilar el proyecto
+
+```bash
+dotnet build
+```
+
+O usando la solución completa:
+
+```bash
+dotnet build CitasApp.sln
+```
+
+---
+
+### Ejecutar la aplicación Web MVC
+
+Desde la carpeta principal del proyecto:
+
+```bash
+dotnet run --project CitasApp.Web.csproj
+```
+
+También se puede ejecutar así si ya estás dentro de la carpeta del proyecto:
+
+```bash
+dotnet run
+```
+
+---
+
+### Ejecutar la API separada
+
+```bash
+dotnet run --project CitasApp.Api/CitasApp.Api.csproj
+```
+
+---
+
+### Rutas principales de la Web MVC
+
+```text
+Página principal / Panel de pruebas:
+http://localhost:PUERTO/
+
+Agenda de citas:
+http://localhost:PUERTO/Cita
+
+Agregar cita:
+http://localhost:PUERTO/Cita/Create
+
+Lista de pacientes:
+http://localhost:PUERTO/Paciente
+
+Lista de médicos:
+http://localhost:PUERTO/Medico
+```
+
+---
+
+### Rutas principales de la API separada
+
+```text
+http://localhost:PUERTO/api/Pacientes
+http://localhost:PUERTO/api/Pacientes/1
+
+http://localhost:PUERTO/api/Medicos
+http://localhost:PUERTO/api/Medicos/1
+
+http://localhost:PUERTO/api/Citas
+http://localhost:PUERTO/api/Citas/porpaciente/1
+
+http://localhost:PUERTO/api/Calculadora/sumar?a=10&b=5
+http://localhost:PUERTO/api/Calculadora/restar?a=10&b=5
+http://localhost:PUERTO/api/Calculadora/multiplicar?a=10&b=5
+http://localhost:PUERTO/api/Calculadora/dividir?a=10&b=5
+```
+
+---
+
+## 🧪 Gestión con Git
+
+```bash
+# Ver en qué rama estás
+git branch
+
+# Agregar cambios
+git add .
+
+# Crear commit
+git commit -m "Actualizacion de CitasApp con Web MVC, API y repositorios"
+
+# Ver remoto
+git remote -v
+
+# Subir cambios
+git push
+```
+
+Si es la primera vez que subes la rama:
+
+```bash
+git push -u origin nombre-de-tu-rama
+```
+
+---
+
+## 🖥️ Uso en JetBrains Rider
+
+```text
+1. Abre JetBrains Rider.
+2. Selecciona Open.
+3. Abre la carpeta ArqSoft-S05-Angel.
+4. También puedes abrir CitasApp.sln.
+5. Espera a que Rider restaure las dependencias.
+6. Selecciona el proyecto CitasApp.Web para ejecutar la aplicación MVC.
+7. Selecciona el proyecto CitasApp.Api si quieres ejecutar la API separada.
+8. Presiona Run.
+9. Abre la ruta local que indique Rider en el navegador.
+```
+
+---
+
+## 🐧 Requisitos en Arch Linux
+
+Instalar el SDK de .NET:
+
+```bash
+sudo pacman -S dotnet-sdk
+```
+
+Verificar la instalación:
+
+```bash
+dotnet --list-sdks
+dotnet --list-runtimes
+```
+
+El proyecto está configurado para:
+
+```xml
+<TargetFramework>net10.0</TargetFramework>
+```
+
+Por eso se necesita tener instalado un SDK compatible con **.NET 10**.
+
+---
+
 ## 📸 Evidencias de Ejecución
 
-En esta sección se muestran capturas del proyecto funcionando correctamente en el navegador. Las imágenes evidencian la pantalla principal, la agenda de citas y el formulario para agregar una nueva cita médica.
+En esta sección se muestran capturas del proyecto funcionando correctamente en el navegador.
 
-### ✅ Página principal
+### ✅ Página principal / Panel de pruebas
 
-En esta captura se observa la pantalla inicial de la aplicación `CitasApp`. También se muestra la barra de navegación superior con las opciones principales del sistema: `Home`, `Citas`, `Medico` y `Paciente`.
+En esta captura se muestra la página principal de CitasApp. Esta pantalla funciona como panel para probar endpoints de pacientes, médicos, citas y calculadora.
 
 ![Página principal de CitasApp](assets/1.png)
 
@@ -219,7 +581,7 @@ En esta captura se observa la pantalla inicial de la aplicación `CitasApp`. Tam
 
 ### 📅 Agenda de citas
 
-En esta imagen se muestra la sección de agenda de citas. La tabla presenta las citas médicas registradas con su fecha, hora, paciente, médico, motivo, estado y un enlace para ver más detalles.
+En esta imagen se muestra la sección de agenda de citas. La tabla presenta la fecha, hora, paciente, médico, motivo, estado y un enlace para ver las citas asociadas al paciente.
 
 ![Agenda de citas](assets/2.png)
 
@@ -227,269 +589,397 @@ En esta imagen se muestra la sección de agenda de citas. La tabla presenta las 
 
 ### ➕ Formulario para agregar cita
 
-En esta captura se observa el formulario para agregar una nueva cita médica. El sistema permite seleccionar un paciente, elegir un médico, capturar la fecha, hora, motivo y estado de la cita antes de guardarla.
+En esta captura se observa el formulario para agregar una nueva cita médica. El sistema permite seleccionar paciente, médico, fecha, hora, motivo y estado antes de guardar.
 
 ![Formulario para agregar cita](assets/3.png)
 
-⚙️ Funcionalidades
+---
 
-Gestión de pacientes: permite visualizar pacientes registrados, agregar nuevos pacientes y consultar el detalle de cada uno.
+## 🖌️ Personalización y Diseño
 
-Gestión de médicos: permite visualizar médicos disponibles, agregar nuevos médicos y consultar el detalle de cada uno.
+El proyecto usa vistas Razor con HTML, CSS y Bootstrap. También se agregaron estilos personalizados para que la interfaz se vea más trabajada.
 
-Gestión de citas: permite consultar la agenda general de citas médicas.
+El archivo principal de estilos de la aplicación MVC es:
 
-Agregar cita: permite crear una nueva cita seleccionando paciente, médico, fecha, hora, motivo y estado.
-
-Citas por paciente: permite ver las citas relacionadas con un paciente específico.
-
-Persistencia intercambiable: los pacientes, médicos y citas pueden guardarse usando JSON, CSV o SQLite. Actualmente se usa CSV en `wwwroot/data`.
-
-Navegación principal: el menú superior permite entrar a Home, Citas, Medico y Paciente.
-
-❓ ¿De qué trata?
-
-El proyecto trata de una aplicación web para administrar citas médicas de manera sencilla. La idea es que el sistema pueda registrar pacientes y médicos, y después crear citas relacionadas con ellos.
-
-La aplicación funciona como una agenda básica donde se puede ver la fecha, hora, paciente, médico, motivo y estado de cada cita. Para guardar la información no se usa una base de datos tradicional, sino archivos JSON, lo cual hace que el proyecto sea más simple y fácil de revisar para una práctica escolar.
-
-🧩 ¿Qué hicimos?
-
-Se creó una aplicación MVC para organizar una agenda de citas médicas. Entre las partes realizadas se encuentran:
+```text
+wwwroot/css/site.css
 ```
-- Se crearon los modelos Paciente, Medico y Cita.
-- Se creó la clase DatosJson para leer y guardar información en archivos JSON.
-- Se agregaron repositorios CSV para pacientes, médicos y citas.
-- Se agregaron repositorios SQLite para pacientes, médicos y citas.
-- Se configuró `Program.cs` para poder elegir entre JSON, CSV o SQLite.
-- Se agregaron archivos JSON para pacientes, médicos y citas.
-- Se creó el controlador PacienteController para listar, agregar y ver detalles de pacientes.
-- Se creó el controlador MedicoController para listar, agregar y ver detalles de médicos.
-- Se creó el controlador CitaController para listar citas, agregar citas y ver citas por paciente.
-- Se crearon vistas Razor para mostrar tablas y formularios.
-- Se agregó un menú superior en _Layout.cshtml para navegar entre las secciones principales.
-- Se relacionaron las citas con pacientes y médicos usando PacienteId y MedicoId.
-- Se agregó la carpeta assets para colocar capturas de evidencia del proyecto.
-- Se configuró el proyecto para ejecutarse como aplicación web ASP.NET Core MVC.
-```
-▶️ ¿Cómo funciona?
-```
-1- La aplicación inicia en la página principal Home.
-2- Desde el menú superior se puede entrar a la sección de Citas, Medico o Paciente.
-3- En la sección de pacientes se pueden ver los pacientes registrados.
-4- También se pueden agregar nuevos pacientes desde el formulario correspondiente.
-5- En la sección de médicos se pueden ver los médicos disponibles.
-6- También se pueden agregar nuevos médicos desde su formulario.
-7- En la sección de citas se muestra la agenda general.
-8- Para crear una cita se selecciona un paciente y un médico registrados.
-9- Después se captura la fecha, hora, motivo y estado de la cita.
-10- Al guardar, la información se escribe en el archivo correspondiente según el adapter activo. Actualmente se guarda en CSV dentro de `wwwroot/data`.
-11- Desde el detalle de un paciente se pueden consultar sus citas.
 
-```
-🛠️ Comandos de Uso
-Desarrollo con .NET
-```
-# Restaurar dependencias
-dotnet restore
+El panel de pruebas usa su propio archivo:
 
-# Compilar proyecto
-dotnet build
+```text
+wwwroot/css/panel-pruebas.css
+```
 
-# Ejecutar el proyecto web
-dotnet run --project CitasApp.csproj
-```
-También se puede ejecutar desde la carpeta del proyecto:
-```
-cd ArqSoft-S05-Angel
-dotnet run
-```
-Gestión con Git
-```
-# Inicializar repositorio
-git init
+El JavaScript del panel de pruebas está en:
 
-# Agregar archivos
-git add .
-
-# Crear commit
-git commit -m "CitasApp con pacientes, medicos, citas y persistencia JSON"
-
-# Conectar con GitHub
-git remote add origin URL_DEL_REPOSITORIO
-
-# Subir cambios
-git push -u origin main
+```text
+wwwroot/js/panel-pruebas.js
 ```
-🖥️ Uso en JetBrains Rider
-```
-1 Abre JetBrains Rider.
-2 Selecciona Open.
-3 Abre el archivo CitasApp.slnx o la carpeta del proyecto.
-4 Espera a que Rider restaure y sincronice el proyecto.
-5 Selecciona como configuración de ejecución el proyecto CitasApp.
-6 Presiona Run.
-7 Abre la ruta del navegador que indique Rider.
-```
-En mi caso, el proyecto se ejecutó en una ruta local como esta:
-```
-http://localhost:5018
-```
-Para abrir directamente la agenda de citas se puede usar:
-```
-http://localhost:5018/Cita
-```
-Y para abrir el formulario de agregar cita:
-```
-http://localhost:5018/Cita/Create
-```
-📸 Evidencias de Ejecución
-
-En esta sección se muestran capturas del proyecto funcionando correctamente en el navegador. Las imágenes evidencian la pantalla principal, la agenda de citas y el formulario para agregar una nueva cita médica.
-
-✅ Página principal
-
-En esta captura se observa la pantalla inicial de la aplicación CitasApp. También se muestra la barra de navegación superior con las opciones principales del sistema: Home, Citas, Medico y Paciente.
-
-📅 Agenda de citas
-
-En esta imagen se muestra la sección de agenda de citas. La tabla presenta las citas médicas registradas con su fecha, hora, paciente, médico, motivo, estado y un enlace para ver más detalles.
-
-➕ Formulario para agregar cita
-
-En esta captura se observa el formulario para agregar una nueva cita médica. El sistema permite seleccionar un paciente, elegir un médico, capturar la fecha, hora, motivo y estado de la cita antes de guardarla.
-
-🐧 Requisitos en Arch Linux
-
-Instala el SDK de .NET compatible con el proyecto:
-```
-sudo pacman -S dotnet-sdk
-```
-Verifica la instalación:
-```
-dotnet --list-sdks
-dotnet --list-runtimes
-```
-El proyecto está configurado para:
-```
-<TargetFramework>net10.0</TargetFramework>
-```
-Por lo tanto, el sistema debe tener instalado el SDK y runtime de ASP.NET Core correspondientes a .NET 10.
-🖌️ Personalización y Diseño
-
-El proyecto utiliza vistas Razor con HTML y Bootstrap. La estructura visual se controla principalmente desde _Layout.cshtml y los estilos del proyecto se encuentran en wwwroot/css/site.css.
 
 Elementos visuales del proyecto:
-```
+
+```text
 - Barra de navegación superior.
 - Tablas para mostrar pacientes, médicos y citas.
-- Formularios para registrar información nueva.
+- Formularios para registrar información.
 - Enlaces para ver detalles.
-- Estructura básica generada por ASP.NET Core MVC.
-- Uso de Bootstrap para mantener una presentación ordenada.
+- Panel de pruebas para consumir endpoints.
+- Diseño oscuro con colores verdes, naranjas y morados.
+- Estilos personalizados en CSS.
 ```
-💻 Códigos Importantes
-Ruta inicial del proyecto
 
-En Program.cs se configuró la ruta principal del sistema:
+---
+
+## 💻 Códigos Importantes
+
+### Configuración principal de la Web MVC
+
+En `Program.cs` se configura la carpeta de datos y se registran los repositorios CSV:
+
+```csharp
+var dataFolder = Path.Combine(builder.Environment.WebRootPath, "data");
+Directory.CreateDirectory(dataFolder);
+
+var csvPacientes = Path.Combine(dataFolder, "pacientes.csv");
+var csvMedicos = Path.Combine(dataFolder, "medicos.csv");
+var csvCitas = Path.Combine(dataFolder, "citas.csv");
+
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton<IPacienteRepository>(_ => new CsvPacienteRepository(csvPacientes));
+builder.Services.AddSingleton<IMedicoRepository>(_ => new CsvMedicoRepository(csvMedicos));
+builder.Services.AddSingleton<ICitaRepository>(_ => new CsvCitaRepository(csvCitas));
 ```
+
+---
+
+### Ruta principal de la aplicación MVC
+
+```csharp
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 ```
-Lectura de archivos JSON
 
-En DatosJson.cs se creó el método para leer información desde la carpeta Data:
+---
+
+### Registro de endpoints API dentro de la Web
+
+```csharp
+app.MapControllers();
 ```
-public static List<T> Leer<T>(string archivo)
+
+Esto permite usar rutas como:
+
+```text
+/api/pacientes
+/api/medicos
+/api/citas
+/api/calculadora
+```
+
+---
+
+### Configuración de la API separada
+
+En `CitasApp.Api/Program.cs` se registran los repositorios JSON y los servicios de aplicación:
+
+```csharp
+builder.Services.AddControllers();
+
+builder.Services.AddScoped<IPacienteRepository, JsonPacienteRepository>();
+builder.Services.AddScoped<IMedicoRepository, JsonMedicoRepository>();
+builder.Services.AddScoped<ICitaRepository, JsonCitaRepository>();
+
+builder.Services.AddScoped<PacienteService>();
+builder.Services.AddScoped<MedicoService>();
+builder.Services.AddScoped<CitaService>();
+```
+
+---
+
+### Servicio de citas
+
+En `CitaService.cs` se concentra la lógica para obtener citas:
+
+```csharp
+public class CitaService
 {
-    var ruta = Path.Combine(Directory.GetCurrentDirectory(), "Data", archivo);
+    private readonly ICitaRepository _citaRepository;
 
-    if (!File.Exists(ruta))
+    public CitaService(ICitaRepository citaRepository)
     {
-        File.WriteAllText(ruta, "[]");
+        _citaRepository = citaRepository;
     }
 
-    var json = File.ReadAllText(ruta);
-
-    if (string.IsNullOrWhiteSpace(json))
+    public List<Cita> ObtenerTodos()
     {
-        return new List<T>();
+        return _citaRepository.ObtenerTodos();
     }
 
-    return JsonSerializer.Deserialize<List<T>>(json, opciones) ?? new List<T>();
+    public List<Cita> ObtenerPorPaciente(int pacienteId)
+    {
+        return _citaRepository.ObtenerPorPaciente(pacienteId);
+    }
+
+    public void Agregar(Cita cita)
+    {
+        _citaRepository.Agregar(cita);
+    }
 }
 ```
-Guardado de archivos JSON
 
-El método Guardar permite escribir la información actualizada en el archivo JSON correspondiente:
-```
-public static void Guardar<T>(string archivo, List<T> datos)
-{
-    var ruta = Path.Combine(Directory.GetCurrentDirectory(), "Data", archivo);
+---
 
-    var json = JsonSerializer.Serialize(datos, opciones);
+### Agregar una cita desde MVC
 
-    File.WriteAllText(ruta, json);
-}
-```
-Agregar una cita
+En `CitaController.cs`, el método `Create` recibe la cita desde el formulario y la guarda mediante el repositorio:
 
-En CitaController se crea un nuevo ID, se agrega la cita a la lista y se guarda en Citas.json:
-```
+```csharp
 [HttpPost]
 [ValidateAntiForgeryToken]
 public IActionResult Create(Cita cita)
 {
-    var citas = Citas();
+    if (!ModelState.IsValid)
+    {
+        CargarPacientesYMedicos();
+        return View(cita);
+    }
 
-    cita.Id = citas.Any() ? citas.Max(c => c.Id) + 1 : 1;
-
-    citas.Add(cita);
-
-    DatosJson.Guardar("Citas.json", citas);
-
+    _citaRepo.Agregar(cita);
     return RedirectToAction(nameof(Index));
 }
 ```
-Mostrar nombres en lugar de IDs
 
-En la vista Views/Cita/Index.cshtml, la cita usa los IDs para buscar el paciente y el médico correspondiente:
+---
+
+### Cargar pacientes y médicos en las vistas
+
+```csharp
+private void CargarPacientesYMedicos()
+{
+    ViewBag.Pacientes = _pacienteRepo.ObtenerTodos();
+    ViewBag.Medicos = _medicoRepo.ObtenerTodos();
+}
 ```
+
+Esto permite que el formulario de citas pueda mostrar pacientes y médicos en listas desplegables.
+
+---
+
+### Mostrar nombres en lugar de IDs
+
+En la vista `Views/Cita/Index.cshtml`, la cita busca el paciente y el médico usando sus identificadores:
+
+```csharp
 var paciente = pacientes?.FirstOrDefault(p => p.Id == c.PacienteId);
 var medico = medicos?.FirstOrDefault(m => m.Id == c.MedicoId);
 ```
-De esa manera, la tabla puede mostrar el nombre completo del paciente y del médico.
 
-Menú principal
+Así la tabla puede mostrar el nombre completo en lugar de mostrar solamente el ID.
 
-En _Layout.cshtml se agregaron enlaces para navegar entre las secciones principales del sistema:
-```
-<a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-<a class="nav-link text-dark" asp-controller="Cita" asp-action="Index">Citas</a>
-<a class="nav-link text-dark" asp-controller="Medico" asp-action="Index">Medico</a>
-<a class="nav-link text-dark" asp-controller="Paciente" asp-action="Index">Paciente</a>
-```
-✅ Validación de Entrada
+---
 
-El proyecto tiene formularios para capturar información de pacientes, médicos y citas. Actualmente se usa el envío normal de formularios MVC con protección antifalsificación mediante:
+### Buscar citas por paciente desde la Web API interna
+
+```csharp
+[HttpGet("por-paciente/{pacienteId:int}")]
+[HttpGet("porpaciente/{pacienteId:int}")]
+public IActionResult BuscarPorPaciente(int pacienteId)
+{
+    var citas = _repo.ObtenerPorPaciente(pacienteId);
+
+    if (citas.Count == 0)
+    {
+        return NotFound(new
+        {
+            mensaje = "No se encontraron citas para ese paciente"
+        });
+    }
+
+    return Ok(citas);
+}
 ```
+
+---
+
+### JavaScript del panel de pruebas
+
+El archivo `panel-pruebas.js` usa `fetch` para consumir endpoints:
+
+```javascript
+async function pedirDatos(url, salidaId, statusId) {
+    const salida = document.getElementById(salidaId);
+    const status = document.getElementById(statusId);
+
+    salida.textContent = "Cargando...";
+    status.textContent = "-";
+
+    try {
+        const respuesta = await fetch(url);
+        const texto = await respuesta.text();
+
+        let datos;
+
+        try {
+            datos = JSON.parse(texto);
+        } catch {
+            datos = texto;
+        }
+
+        status.textContent = respuesta.status;
+
+        salida.textContent = typeof datos === "string"
+            ? datos
+            : JSON.stringify(datos, null, 2);
+
+    } catch (error) {
+        status.textContent = "Error";
+        salida.textContent = error.message;
+    }
+}
+```
+
+---
+
+## ✅ Validación de Entrada
+
+El proyecto usa formularios MVC para capturar información de pacientes, médicos y citas.
+
+La información capturada es:
+
+```text
+Paciente:
+- Nombre
+- Apellido
+- Email
+- Teléfono
+
+Médico:
+- Nombre
+- Apellido
+- Especialidad
+- Número de licencia
+
+Cita:
+- Paciente
+- Médico
+- Fecha
+- Hora
+- Motivo
+- Estado
+```
+
+En los métodos `Create` se utiliza:
+
+```csharp
 [ValidateAntiForgeryToken]
 ```
-La información que se captura es:
-```
-Paciente: nombre, apellido, email y teléfono.
-Médico: nombre, apellido, especialidad y número de licencia.
-Cita: paciente, médico, fecha, hora, motivo y estado.
-```
-Como mejora futura, se pueden agregar validaciones más estrictas con anotaciones como [Required], [EmailAddress] y mensajes personalizados para evitar registros incompletos.
 
-📈 Mejoras Futuras
+También se revisa el estado del modelo con:
+
+```csharp
+if (!ModelState.IsValid)
+{
+    return View(modelo);
+}
 ```
+
+Como mejora futura, se pueden agregar anotaciones como:
+
+```csharp
+[Required]
+[EmailAddress]
+[StringLength]
+```
+
+Esto ayudaría a evitar registros vacíos o información incorrecta.
+
+---
+
+## 📁 Manejo de Datos
+
+### Web MVC
+
+La aplicación Web MVC usa CSV como persistencia activa.
+
+Archivos usados:
+
+```text
+wwwroot/data/pacientes.csv
+wwwroot/data/medicos.csv
+wwwroot/data/citas.csv
+```
+
+Ejemplo de flujo:
+
+```text
+Formulario MVC
+    ↓
+Controlador MVC
+    ↓
+Repositorio CSV
+    ↓
+Archivo .csv
+```
+
+---
+
+### API separada
+
+La API separada usa JSON como persistencia activa.
+
+Archivos usados:
+
+```text
+CitasApp.Api/Data/Pacientes.json
+CitasApp.Api/Data/Medicos.json
+CitasApp.Api/Data/Citas.json
+```
+
+Ejemplo de flujo:
+
+```text
+Petición HTTP
+    ↓
+Controlador API
+    ↓
+Servicio de aplicación
+    ↓
+Repositorio JSON
+    ↓
+Archivo .json
+```
+
+---
+
+### SQLite
+
+También existen repositorios SQLite:
+
+```text
+SqlitePacienteRepository.cs
+SqliteMedicoRepository.cs
+SqliteCitaRepository.cs
+```
+
+Estos permiten que el proyecto pueda adaptarse a una base de datos local en lugar de depender de archivos CSV o JSON.
+
+---
+
+## 📈 Mejoras Futuras
+
+```text
+[ ] Unificar la persistencia para que la Web MVC y la API usen la misma fuente de datos.
+
+[ ] Decidir si el proyecto principal usará CSV, JSON o SQLite como almacenamiento final.
+
+[ ] Activar SQLite como repositorio principal cuando se quiera trabajar con base de datos local.
+
 [ ] Agregar validaciones con Data Annotations en los modelos.
 
-[ ] Evitar guardar registros vacíos en los archivos JSON.
+[ ] Evitar registros vacíos en pacientes, médicos y citas.
 
 [ ] Agregar edición de pacientes.
 
@@ -505,20 +995,33 @@ Como mejora futura, se pueden agregar validaciones más estrictas con anotacione
 
 [ ] Crear una vista de detalle individual para cada cita.
 
-[ ] Mejorar el diseño visual de las tablas y formularios.
+[ ] Mejorar la validación de fechas y horas.
 
-[ ] Activar SQLite como adapter principal cuando se quiera trabajar con base de datos local.
+[ ] Evitar citas duplicadas para el mismo médico en la misma fecha y hora.
 
-[ ] Unificar los namespaces del proyecto para mantener una estructura más limpia.
+[ ] Agregar mensajes visuales cuando se guarde un registro correctamente.
+
+[ ] Documentar mejor la diferencia entre CitasApp.Web y CitasApp.Api.
+
+[ ] Limpiar archivos temporales como bin, obj o respaldos .bak antes de subir a GitHub.
 ```
-🏁 Conclusión
 
-Este proyecto permitió aplicar conceptos de arquitectura de software en una aplicación web real usando ASP.NET Core MVC. Se trabajó con modelos, controladores, vistas, interfaces y repositorios para manejar la persistencia local mediante JSON, CSV y SQLite.
+---
 
-Además, el proyecto ayudó a entender cómo se relacionan distintas entidades dentro de una aplicación, ya que una cita necesita estar conectada con un paciente y un médico. Aunque todavía se pueden agregar mejoras como validaciones, edición y eliminación de registros, la base principal del sistema ya permite administrar una agenda médica sencilla y funcional.
+## 🏁 Conclusión
 
-Cláusula de IA
-```
-Yo Angel Abraham Lugo Saenz declaro que utilicé IA,
-para realizar mi README, resolver problemas que tuve en al comunicacion de las diferentres capasa de mi codigo y apoyarme en la redacción del documento y explicar de forma más clara la estructura y funcionamiento de mi proyecto de citas médicas.
+Este proyecto permitió aplicar conceptos de arquitectura de software en una aplicación web real usando ASP.NET Core MVC, Web API, servicios, interfaces y repositorios.
+
+La aplicación permite administrar pacientes, médicos y citas médicas de forma sencilla. Además, se agregó una organización por capas para separar los modelos, la lógica de aplicación y la infraestructura de datos.
+
+Aunque el sistema todavía puede mejorar, especialmente en la unificación de la persistencia entre la Web MVC y la API, la base principal ya permite trabajar con una agenda médica funcional, consultar información desde vistas Razor y probar endpoints mediante un panel web.
+
+---
+
+## Cláusula de IA
+
+```text
+Yo, Angel Abraham Lugo Saenz, declaro que utilicé IA como apoyo para redactar y organizar este README, explicar con mayor claridad la estructura del proyecto, revisar la comunicación entre capas y documentar el funcionamiento general de CitasApp.
+
+El código, la estructura del proyecto y las decisiones principales fueron trabajadas como parte de la actividad escolar de Arquitectura de Software.
 ```
