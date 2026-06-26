@@ -820,7 +820,7 @@ Por eso se necesita tener instalado un SDK compatible con **.NET 10**.
 
 En esta sección se muestran capturas del proyecto funcionando correctamente en el navegador.
 
-### ✅ Página principal / Panel de pruebas
+### ✅ Página principal / END POINTS
 
 En esta captura se muestra la página principal de CitasApp. Esta pantalla funciona como panel para probar endpoints de pacientes, médicos, citas y calculadora.
 
@@ -828,7 +828,7 @@ En esta captura se muestra la página principal de CitasApp. Esta pantalla funci
 
 ---
 
-### 📅 Agenda de citas
+### 📅 Comprobacion por terminal del GOF
 
 En esta imagen se muestra la sección de agenda de citas. La tabla presenta la fecha, hora, paciente, médico, motivo, estado y un enlace para ver las citas asociadas al paciente.
 
@@ -836,7 +836,7 @@ En esta imagen se muestra la sección de agenda de citas. La tabla presenta la f
 
 ---
 
-### ➕ Formulario para agregar cita
+### ➕ Visualización en la página web ✅
 
 En esta captura se observa el formulario para agregar una nueva cita médica. El sistema permite seleccionar paciente, médico, fecha, hora, motivo y estado antes de guardar.
 
