@@ -105,5 +105,32 @@ namespace CitasApp.Repositories
 
             cmd.ExecuteNonQuery();
         }
+
+        public void Actualizar(Cita cita)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                UPDATE Citas
+                SET PacienteId = $pacienteId,
+                    MedicoId = $medicoId,
+                    Fecha = $fecha,
+                    Hora = $hora,
+                    Motivo = $motivo,
+                    Estado = $estado
+                WHERE Id = $id;";
+
+            cmd.Parameters.AddWithValue("$id", cita.Id);
+            cmd.Parameters.AddWithValue("$pacienteId", cita.PacienteId);
+            cmd.Parameters.AddWithValue("$medicoId", cita.MedicoId);
+            cmd.Parameters.AddWithValue("$fecha", cita.Fecha.ToString("yyyy-MM-dd"));
+            cmd.Parameters.AddWithValue("$hora", cita.Hora.ToString("HH:mm"));
+            cmd.Parameters.AddWithValue("$motivo", cita.Motivo ?? string.Empty);
+            cmd.Parameters.AddWithValue("$estado", string.IsNullOrWhiteSpace(cita.Estado) ? "Pendiente" : cita.Estado);
+
+            cmd.ExecuteNonQuery();
+        }
     }
 }

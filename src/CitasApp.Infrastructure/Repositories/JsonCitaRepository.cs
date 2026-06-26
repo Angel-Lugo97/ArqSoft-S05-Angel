@@ -74,6 +74,20 @@ namespace CitasApp.Repositories
             Guardar(citas);
         }
 
+        public void Actualizar(Cita cita)
+        {
+            var citas = ObtenerTodos();
+            var index = citas.FindIndex(c => c.Id == cita.Id);
+
+            if (index == -1)
+            {
+                return;
+            }
+
+            citas[index] = cita;
+            Guardar(citas);
+        }
+
         private void Guardar(List<Cita> citas)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);

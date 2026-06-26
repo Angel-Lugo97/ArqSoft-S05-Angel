@@ -6,10 +6,12 @@ namespace CitasApp.Application.Services
     public class CitaService
     {
         private readonly ICitaRepository _citaRepository;
+        private readonly List<ICitaObserver> _observers;
 
-        public CitaService(ICitaRepository citaRepository)
+        public CitaService(ICitaRepository citaRepository, IEnumerable<ICitaObserver> observers)
         {
             _citaRepository = citaRepository;
+            _observers = observers.ToList();
         }
 
         public List<Cita> ObtenerTodos()
@@ -25,6 +27,33 @@ namespace CitasApp.Application.Services
         public void Agregar(Cita cita)
         {
             _citaRepository.Agregar(cita);
+        }
+
+        public bool Confirmar(int citaId)
+        {
+            var cita = _citaRepository.ObtenerTodos()
+                .FirstOrDefault(c => c.Id == citaId);
+
+            if (cita == null)
+            {
+                return false;
+            }
+
+            cita.Estado = "Confirmada";
+
+            _citaRepository.Actualizar(cita);
+
+            NotificarObservers(cita);
+
+            return true;
+        }
+
+        private void NotificarObservers(Cita cita)
+        {
+            foreach (var observer in _observers)
+            {
+                observer.Notificar(cita);
+            }
         }
     }
 }

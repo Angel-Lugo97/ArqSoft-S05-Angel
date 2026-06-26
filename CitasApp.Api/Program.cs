@@ -1,10 +1,13 @@
 using CitasApp.Application.Services;
 using CitasApp.Interfaces;
 using CitasApp.Repositories;
+using CitasApp.Observers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Repositorios
 builder.Services.AddScoped<IPacienteRepository>(sp =>
@@ -33,12 +36,19 @@ builder.Services.AddScoped<ICitaRepository>(sp =>
         builder.Environment.EnvironmentName, env);
 });
 
+// Observers de notificaciones
+builder.Services.AddScoped<ICitaObserver, SmsObserver>();
+builder.Services.AddScoped<ICitaObserver, EmailObserver>();
+
 // Servicios de aplicación
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<MedicoService>();
 builder.Services.AddScoped<CitaService>();
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

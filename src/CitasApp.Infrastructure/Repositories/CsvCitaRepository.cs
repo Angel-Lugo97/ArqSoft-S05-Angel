@@ -98,5 +98,19 @@ namespace CitasApp.Repositories
             citas.Add(cita);
             EscribirTodos(citas);
         }
+
+        public void Actualizar(Cita cita)
+        {
+            var citas = LeerTodos();
+            var index = citas.FindIndex(c => c.Id == cita.Id);
+
+            if (index == -1)
+            {
+                return;
+            }
+
+            citas[index] = cita;
+            EscribirTodos(citas);
+        }
     }
 }
