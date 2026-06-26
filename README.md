@@ -1,10 +1,12 @@
-# CitasApp - Sistema de Gestión de Citas Médicas
+# CitasApp - Sistema de Gestión de Citas Médicas con Observer
 
 Este proyecto es una aplicación web desarrollada con **C#, ASP.NET Core MVC y .NET 10**. Su objetivo principal es administrar citas médicas de manera sencilla, permitiendo consultar pacientes, médicos y citas dentro de una agenda básica.
 
-El proyecto también incluye una **API REST separada**, servicios de aplicación, modelos de dominio, interfaces y repositorios para manejar la persistencia de datos mediante **CSV**, **JSON** y **SQLite**.
+El proyecto también incluye una **API REST separada**, servicios de aplicación, modelos de dominio, interfaces, repositorios y la implementación del patrón **Observer** para enviar notificaciones cuando una cita es confirmada.
 
 Actualmente, la aplicación Web MVC trabaja principalmente con archivos **CSV** ubicados en `wwwroot/data`, mientras que el proyecto `CitasApp.Api` utiliza archivos **JSON** ubicados en su carpeta `Data`.
+
+Además, el reto implementado agrega un sistema de notificaciones donde `CitaService` confirma una cita y notifica a los observers registrados, sin depender directamente de clases de `Infrastructure`.
 
 ---
 
@@ -17,7 +19,7 @@ Actualmente, la aplicación Web MVC trabaja principalmente con archivos **CSV** 
 | **Universidad** | Tecnológico de Software |
 | **Profesor** | Jorge Javier Pedroza Romero |
 | **Materia** | Arquitectura de Software |
-| **Tarea** | Sistema de citas médicas en ASP.NET Core MVC y API |
+| **Tarea** | Sistema de citas médicas en ASP.NET Core MVC, API REST y patrón Observer |
 
 ---
 
@@ -29,15 +31,15 @@ CitasApp es un sistema de citas médicas donde se pueden administrar tres elemen
 * Médicos.
 * Citas médicas.
 
-La aplicación permite registrar pacientes, registrar médicos, crear citas y consultar la agenda general. Cada cita se relaciona con un paciente y con un médico mediante sus identificadores.
+La aplicación permite registrar pacientes, registrar médicos, crear citas, consultar la agenda general y confirmar citas desde la API. Cada cita se relaciona con un paciente y con un médico mediante sus identificadores.
 
 El proyecto está organizado en varias capas para separar mejor las responsabilidades del sistema:
 
 * **CitasApp.Web:** aplicación principal con MVC, Razor Views y panel de pruebas.
-* **CitasApp.Api:** API REST separada para consultar datos mediante endpoints.
-* **CitasApp.Domain:** modelos e interfaces principales del sistema.
-* **CitasApp.Application:** servicios de aplicación.
-* **CitasApp.Infrastructure:** repositorios para CSV, JSON y SQLite.
+* **CitasApp.Api:** API REST separada para consultar datos y confirmar citas mediante endpoints.
+* **CitasApp.Domain:** modelos, interfaces principales y la interfaz `ICitaObserver`.
+* **CitasApp.Application:** servicios de aplicación, incluyendo `CitaService`.
+* **CitasApp.Infrastructure:** repositorios para CSV, JSON y SQLite, además de los observers concretos `SmsObserver` y `EmailObserver`.
 
 Las restricciones principales del proyecto son:
 
@@ -49,6 +51,10 @@ Las restricciones principales del proyecto son:
 * Los repositorios SQLite quedan disponibles como opción de persistencia local.
 * La lógica de acceso a datos se maneja mediante interfaces.
 * La agenda muestra los nombres de pacientes y médicos usando sus IDs.
+* El servicio de citas puede confirmar una cita.
+* Al confirmar una cita se cambia el estado a `Confirmada`.
+* Al confirmar una cita se notifican los observers registrados.
+* `CitaService` no importa ningún namespace de `Infrastructure`.
 
 ---
 
@@ -62,7 +68,10 @@ Las restricciones principales del proyecto son:
 * **Frontend:** HTML, CSS, JavaScript y Bootstrap
 * **Persistencia:** CSV, JSON y SQLite
 * **Base local opcional:** SQLite con `Microsoft.Data.Sqlite`
+* **Documentación visual de API:** Swagger con `Swashbuckle.AspNetCore`
+* **Patrón implementado:** Observer
 * **Arquitectura:** Separación por capas
+* **Principio aplicado:** Inversión de dependencias
 * **IDE recomendado:** JetBrains Rider
 * **Sistema compatible:** Arch Linux
 * **Herramientas:** .NET SDK, Git y GitHub
@@ -87,6 +96,14 @@ Durante el desarrollo se presentaron varios retos importantes:
 * Mantener la estructura del proyecto funcionando con varios `.csproj`.
 * Separar los archivos de datos usados por la Web y por la API.
 * Mantener el proyecto compatible con .NET 10 en Arch Linux.
+* Implementar el patrón Observer para notificar cuando una cita sea confirmada.
+* Crear la interfaz `ICitaObserver` dentro de la capa Domain.
+* Implementar `SmsObserver` y `EmailObserver` dentro de Infrastructure.
+* Modificar `CitaService` para manejar una lista de observers.
+* Evitar que `CitaService` importe namespaces de Infrastructure.
+* Agregar el método `Actualizar` en los repositorios de citas.
+* Agregar un endpoint `POST` para confirmar una cita desde la API.
+* Configurar Swagger para probar visualmente los endpoints desde el navegador.
 
 ---
 
@@ -171,7 +188,8 @@ ArqSoft-S05-Angel/
 │   │   └── Interfaces/
 │   │       ├── IPacienteRepository.cs
 │   │       ├── IMedicoRepository.cs
-│   │       └── ICitaRepository.cs
+│   │       ├── ICitaRepository.cs
+│   │       └── ICitaObserver.cs
 │   │
 │   ├── CitasApp.Application/
 │   │   └── Services/
@@ -180,16 +198,20 @@ ArqSoft-S05-Angel/
 │   │       └── CitaService.cs
 │   │
 │   └── CitasApp.Infrastructure/
-│       └── Repositories/
-│           ├── JsonPacienteRepository.cs
-│           ├── JsonMedicoRepository.cs
-│           ├── JsonCitaRepository.cs
-│           ├── CsvPacienteRepository.cs
-│           ├── CsvMedicoRepository.cs
-│           ├── CsvCitaRepository.cs
-│           ├── SqlitePacienteRepository.cs
-│           ├── SqliteMedicoRepository.cs
-│           └── SqliteCitaRepository.cs
+│       ├── Repositories/
+│       │   ├── JsonPacienteRepository.cs
+│       │   ├── JsonMedicoRepository.cs
+│       │   ├── JsonCitaRepository.cs
+│       │   ├── CsvPacienteRepository.cs
+│       │   ├── CsvMedicoRepository.cs
+│       │   ├── CsvCitaRepository.cs
+│       │   ├── SqlitePacienteRepository.cs
+│       │   ├── SqliteMedicoRepository.cs
+│       │   └── SqliteCitaRepository.cs
+│       │
+│       └── Observers/
+│           ├── SmsObserver.cs
+│           └── EmailObserver.cs
 │
 ├── CitasApp.Api/
 │   ├── Program.cs
@@ -215,11 +237,11 @@ ArqSoft-S05-Angel/
 
 ---
 
-## 🔌 Nueva Organización: Web MVC, API y Repositorios
+## 🔌 Nueva Organización: Web MVC, API, Repositorios y Observer
 
-El proyecto no solamente tiene una aplicación MVC, también incluye una API separada y una capa de infraestructura para manejar distintos tipos de almacenamiento.
+El proyecto no solamente tiene una aplicación MVC, también incluye una API separada, una capa de infraestructura para manejar distintos tipos de almacenamiento y un sistema de notificaciones basado en el patrón **Observer**.
 
-La idea general es que el sistema no dependa directamente de un solo archivo o base de datos, sino de interfaces que pueden ser implementadas por distintos repositorios.
+La idea general es que el sistema no dependa directamente de un solo archivo, base de datos o clase concreta, sino de interfaces que pueden ser implementadas por distintos repositorios u observers.
 
 ### Flujo principal de la Web MVC
 
@@ -265,6 +287,22 @@ CitasApp.Api/Data/Medicos.json
 CitasApp.Api/Data/Citas.json
 ```
 
+### Flujo del patrón Observer
+
+```text
+POST /api/Citas/{id}/confirmar
+    ↓
+CitasController
+    ↓
+CitaService
+    ↓
+ICitaRepository.Actualizar(cita)
+    ↓
+ICitaObserver.Notificar(cita)
+    ↓
+SmsObserver y EmailObserver
+```
+
 ### Repositorios disponibles
 
 ```text
@@ -282,6 +320,65 @@ SQLite:
 - SqlitePacienteRepository.cs
 - SqliteMedicoRepository.cs
 - SqliteCitaRepository.cs
+```
+
+### Observers disponibles
+
+```text
+Observer:
+- ICitaObserver.cs
+
+Implementaciones:
+- SmsObserver.cs
+- EmailObserver.cs
+```
+
+---
+
+## 🧩 Reto Observer
+
+El reto consistió en agregar un sistema de notificaciones cuando una cita médica sea confirmada.
+
+Para lograrlo se creó una interfaz en la capa Domain:
+
+```text
+src/CitasApp.Domain/Interfaces/ICitaObserver.cs
+```
+
+Después se implementaron dos observers en la capa Infrastructure:
+
+```text
+src/CitasApp.Infrastructure/Observers/SmsObserver.cs
+src/CitasApp.Infrastructure/Observers/EmailObserver.cs
+```
+
+También se modificó `CitaService` para recibir una colección de observers:
+
+```text
+IEnumerable<ICitaObserver>
+```
+
+De esta manera, cuando se confirma una cita, el servicio cambia el estado de la cita a `Confirmada`, actualiza la información en el repositorio y notifica a todos los observers registrados.
+
+### ¿Cómo se evita importar Infrastructure en CitaService?
+
+`CitaService` no importa `Infrastructure` porque solo depende de la interfaz `ICitaObserver`, ubicada en `CitasApp.Domain`.
+
+Las clases concretas `SmsObserver` y `EmailObserver` viven en `CitasApp.Infrastructure`, pero se conectan en `Program.cs` mediante inyección de dependencias.
+
+Esto aplica el principio de inversión de dependencias:
+
+```text
+Application depende de Domain
+Infrastructure depende de Domain
+Application no depende de Infrastructure
+```
+
+La conexión real se hace en `CitasApp.Api/Program.cs`:
+
+```text
+ICitaObserver → SmsObserver
+ICitaObserver → EmailObserver
 ```
 
 ---
@@ -303,6 +400,58 @@ Permite consultar la agenda general de citas médicas, mostrando fecha, hora, pa
 ### Agregar cita
 
 Permite crear una nueva cita seleccionando un paciente, un médico, una fecha, una hora, un motivo y un estado.
+
+### Confirmar cita
+
+Permite confirmar una cita desde la API mediante un endpoint `POST`.
+
+Al confirmar una cita:
+
+```text
+1. Se busca la cita por su ID.
+2. Se cambia el estado a Confirmada.
+3. Se actualiza la cita en el repositorio.
+4. Se notifican los observers registrados.
+5. Se muestra una respuesta indicando que la cita fue confirmada.
+```
+
+Endpoint usado:
+
+```text
+POST /api/Citas/{id}/confirmar
+```
+
+Ejemplo:
+
+```bash
+curl -X POST http://localhost:5018/api/Citas/1/confirmar
+```
+
+Respuesta esperada:
+
+```json
+{
+  "mensaje": "Cita confirmada y notificaciones enviadas"
+}
+```
+
+### Notificaciones
+
+El sistema cuenta con dos observers:
+
+```text
+SmsObserver
+EmailObserver
+```
+
+Cuando una cita se confirma, ambos observers reciben la cita y muestran un mensaje de notificación en la consola de la API.
+
+Ejemplo de salida en consola:
+
+```text
+SMS enviado: la cita #1 fue confirmada para el paciente #1.
+Email enviado: la cita #1 fue confirmada para el paciente #1.
+```
 
 ### Citas por paciente
 
@@ -343,6 +492,22 @@ multiplicar
 dividir
 ```
 
+### Swagger
+
+La API separada puede visualizarse desde el navegador usando Swagger.
+
+Ruta principal:
+
+```text
+http://localhost:5018/swagger/index.html
+```
+
+Desde Swagger se pueden probar visualmente los endpoints de la API, incluyendo:
+
+```text
+POST /api/Citas/{id}/confirmar
+```
+
 ---
 
 ## ❓ ¿De qué trata?
@@ -351,7 +516,9 @@ El proyecto trata de una aplicación para administrar citas médicas. La idea pr
 
 La aplicación funciona como una agenda médica sencilla donde se puede consultar quién tiene una cita, con qué médico, en qué fecha, a qué hora, por qué motivo y con qué estado.
 
-También se agregó una API para consultar datos desde endpoints, además de un panel visual que permite probar esas rutas desde el navegador sin usar herramientas externas.
+También se agregó una API para consultar datos desde endpoints, además de un panel visual que permite probar rutas desde el navegador sin usar herramientas externas.
+
+En el reto final se agregó el patrón **Observer**, para que al confirmar una cita se puedan enviar notificaciones simuladas por SMS y Email.
 
 ---
 
@@ -362,23 +529,34 @@ Se creó una aplicación de citas médicas organizada en varias partes:
 ```text
 - Se crearon los modelos Paciente, Medico, Cita y CitaJson.
 - Se crearon interfaces para pacientes, médicos y citas.
+- Se creó la interfaz ICitaObserver para el patrón Observer.
 - Se creó la capa Domain para modelos e interfaces.
 - Se creó la capa Application para servicios.
-- Se creó la capa Infrastructure para repositorios.
+- Se modificó CitaService para confirmar citas y notificar observers.
+- Se creó la capa Infrastructure para repositorios y observers.
 - Se agregaron repositorios CSV para pacientes, médicos y citas.
 - Se agregaron repositorios JSON para pacientes, médicos y citas.
 - Se agregaron repositorios SQLite como alternativa de almacenamiento.
+- Se agregó el método Actualizar en ICitaRepository.
+- Se implementó Actualizar en CsvCitaRepository.
+- Se implementó Actualizar en JsonCitaRepository.
+- Se implementó Actualizar en SqliteCitaRepository.
+- Se creó SmsObserver.
+- Se creó EmailObserver.
 - Se configuró Program.cs de la Web para usar CSV.
 - Se configuró Program.cs de la API para usar JSON.
+- Se registraron SmsObserver y EmailObserver mediante inyección de dependencias.
 - Se crearon controladores MVC para pacientes, médicos y citas.
 - Se crearon controladores API dentro de la Web para el panel de pruebas.
 - Se creó una API separada en CitasApp.Api.
+- Se agregó el endpoint POST /api/Citas/{id}/confirmar.
 - Se agregaron servicios PacienteService, MedicoService y CitaService.
 - Se crearon vistas Razor para listar, agregar y consultar detalles.
 - Se agregó navegación principal en _Layout.cshtml.
 - Se agregaron archivos CSV dentro de wwwroot/data.
 - Se agregaron archivos JSON dentro de Data.
 - Se creó un panel de pruebas usando HTML, CSS y JavaScript.
+- Se configuró Swagger para probar endpoints desde el navegador.
 - Se agregaron estilos personalizados para la interfaz.
 - Se agregaron capturas de evidencia dentro de assets.
 ```
@@ -400,6 +578,14 @@ Se creó una aplicación de citas médicas organizada en varias partes:
 10. La información se escribe nuevamente en el archivo CSV correspondiente.
 11. El panel de pruebas usa JavaScript para hacer peticiones fetch a los endpoints.
 12. La API separada trabaja con servicios de aplicación y repositorios JSON.
+13. Para confirmar una cita se usa el endpoint POST /api/Citas/{id}/confirmar.
+14. CitasController llama a CitaService.
+15. CitaService busca la cita por ID.
+16. CitaService cambia el estado de la cita a Confirmada.
+17. CitaService actualiza la cita usando ICitaRepository.
+18. CitaService recorre su lista de observers.
+19. SmsObserver muestra una notificación simulada por SMS.
+20. EmailObserver muestra una notificación simulada por Email.
 ```
 
 ---
@@ -408,11 +594,7 @@ Se creó una aplicación de citas médicas organizada en varias partes:
 
 ### Restaurar dependencias
 
-```bash
-dotnet restore
-```
-
-También se puede restaurar usando la solución:
+Como la carpeta contiene más de un proyecto, es recomendable usar la solución directamente:
 
 ```bash
 dotnet restore CitasApp.sln
@@ -420,13 +602,15 @@ dotnet restore CitasApp.sln
 
 ---
 
-### Compilar el proyecto
+### Limpiar el proyecto
 
 ```bash
-dotnet build
+dotnet clean CitasApp.sln
 ```
 
-O usando la solución completa:
+---
+
+### Compilar el proyecto
 
 ```bash
 dotnet build CitasApp.sln
@@ -442,10 +626,10 @@ Desde la carpeta principal del proyecto:
 dotnet run --project CitasApp.Web.csproj
 ```
 
-También se puede ejecutar así si ya estás dentro de la carpeta del proyecto:
+También se puede ejecutar así si ya estás dentro de la carpeta del proyecto y quieres correr la Web:
 
 ```bash
-dotnet run
+dotnet run --project CitasApp.Web.csproj
 ```
 
 ---
@@ -454,6 +638,58 @@ dotnet run
 
 ```bash
 dotnet run --project CitasApp.Api/CitasApp.Api.csproj
+```
+
+Para forzar el puerto usado durante la prueba:
+
+```bash
+dotnet run --project CitasApp.Api/CitasApp.Api.csproj --urls "http://localhost:5018"
+```
+
+---
+
+### Probar la API desde terminal
+
+Verificar que la API está funcionando:
+
+```bash
+curl http://localhost:5018/
+```
+
+Consultar citas:
+
+```bash
+curl http://localhost:5018/api/Citas
+```
+
+Confirmar cita:
+
+```bash
+curl -X POST http://localhost:5018/api/Citas/1/confirmar
+```
+
+Respuesta esperada:
+
+```json
+{
+  "mensaje": "Cita confirmada y notificaciones enviadas"
+}
+```
+
+---
+
+### Ver Swagger en el navegador
+
+Con la API corriendo, abrir:
+
+```text
+http://localhost:5018/swagger/index.html
+```
+
+Desde ahí se puede probar visualmente:
+
+```text
+POST /api/Citas/{id}/confirmar
 ```
 
 ---
@@ -482,19 +718,23 @@ http://localhost:PUERTO/Medico
 ### Rutas principales de la API separada
 
 ```text
-http://localhost:PUERTO/api/Pacientes
-http://localhost:PUERTO/api/Pacientes/1
+http://localhost:5018/
+http://localhost:5018/swagger/index.html
 
-http://localhost:PUERTO/api/Medicos
-http://localhost:PUERTO/api/Medicos/1
+http://localhost:5018/api/Pacientes
+http://localhost:5018/api/Pacientes/1
 
-http://localhost:PUERTO/api/Citas
-http://localhost:PUERTO/api/Citas/porpaciente/1
+http://localhost:5018/api/Medicos
+http://localhost:5018/api/Medicos/1
 
-http://localhost:PUERTO/api/Calculadora/sumar?a=10&b=5
-http://localhost:PUERTO/api/Calculadora/restar?a=10&b=5
-http://localhost:PUERTO/api/Calculadora/multiplicar?a=10&b=5
-http://localhost:PUERTO/api/Calculadora/dividir?a=10&b=5
+http://localhost:5018/api/Citas
+http://localhost:5018/api/Citas/porpaciente/1
+http://localhost:5018/api/Citas/1/confirmar
+
+http://localhost:5018/api/Calculadora/sumar?a=10&b=5
+http://localhost:5018/api/Calculadora/restar?a=10&b=5
+http://localhost:5018/api/Calculadora/multiplicar?a=10&b=5
+http://localhost:5018/api/Calculadora/dividir?a=10&b=5
 ```
 
 ---
@@ -505,11 +745,14 @@ http://localhost:PUERTO/api/Calculadora/dividir?a=10&b=5
 # Ver en qué rama estás
 git branch
 
+# Ver archivos modificados
+git status
+
 # Agregar cambios
 git add .
 
 # Crear commit
-git commit -m "Actualizacion de CitasApp con Web MVC, API y repositorios"
+git commit -m "Implementa patron Observer para notificaciones de citas"
 
 # Ver remoto
 git remote -v
@@ -536,8 +779,14 @@ git push -u origin nombre-de-tu-rama
 5. Espera a que Rider restaure las dependencias.
 6. Selecciona el proyecto CitasApp.Web para ejecutar la aplicación MVC.
 7. Selecciona el proyecto CitasApp.Api si quieres ejecutar la API separada.
-8. Presiona Run.
-9. Abre la ruta local que indique Rider en el navegador.
+8. Si quieres probar Observer, ejecuta CitasApp.Api.
+9. Abre http://localhost:5018/swagger/index.html en el navegador.
+10. Busca POST /api/Citas/{id}/confirmar.
+11. Presiona Try it out.
+12. Escribe el ID de una cita.
+13. Presiona Execute.
+14. Revisa la respuesta en Swagger.
+15. Revisa la consola de Rider para ver las notificaciones de SMS y Email.
 ```
 
 ---
@@ -595,6 +844,32 @@ En esta captura se observa el formulario para agregar una nueva cita médica. El
 
 ---
 
+### 🔔 Confirmación de cita con Observer
+
+En esta parte se puede agregar una captura de Swagger o de la terminal mostrando que el endpoint confirmó la cita correctamente.
+
+Ruta recomendada para la evidencia:
+
+```text
+http://localhost:5018/swagger/index.html
+```
+
+Endpoint probado:
+
+```text
+POST /api/Citas/{id}/confirmar
+```
+
+Respuesta obtenida:
+
+```json
+{
+  "mensaje": "Cita confirmada y notificaciones enviadas"
+}
+```
+
+---
+
 ## 🖌️ Personalización y Diseño
 
 El proyecto usa vistas Razor con HTML, CSS y Bootstrap. También se agregaron estilos personalizados para que la interfaz se vea más trabajada.
@@ -625,6 +900,7 @@ Elementos visuales del proyecto:
 - Formularios para registrar información.
 - Enlaces para ver detalles.
 - Panel de pruebas para consumir endpoints.
+- Swagger para probar visualmente la API REST.
 - Diseño oscuro con colores verdes, naranjas y morados.
 - Estilos personalizados en CSS.
 ```
@@ -683,14 +959,19 @@ Esto permite usar rutas como:
 
 ### Configuración de la API separada
 
-En `CitasApp.Api/Program.cs` se registran los repositorios JSON y los servicios de aplicación:
+En `CitasApp.Api/Program.cs` se registran los repositorios JSON, los services de aplicación, Swagger y los observers:
 
 ```csharp
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IPacienteRepository, JsonPacienteRepository>();
 builder.Services.AddScoped<IMedicoRepository, JsonMedicoRepository>();
 builder.Services.AddScoped<ICitaRepository, JsonCitaRepository>();
+
+builder.Services.AddScoped<ICitaObserver, SmsObserver>();
+builder.Services.AddScoped<ICitaObserver, EmailObserver>();
 
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<MedicoService>();
@@ -699,18 +980,93 @@ builder.Services.AddScoped<CitaService>();
 
 ---
 
-### Servicio de citas
+### Activación de Swagger
 
-En `CitaService.cs` se concentra la lógica para obtener citas:
+```csharp
+app.UseSwagger();
+app.UseSwaggerUI();
+```
+
+Esto permite abrir la documentación visual de la API desde:
+
+```text
+http://localhost:5018/swagger/index.html
+```
+
+---
+
+### Interfaz del Observer
+
+En `ICitaObserver.cs` se define la abstracción que usarán los observers:
+
+```csharp
+using CitasApp.Models;
+
+namespace CitasApp.Interfaces
+{
+    public interface ICitaObserver
+    {
+        void Notificar(Cita cita);
+    }
+}
+```
+
+---
+
+### Observer para SMS
+
+```csharp
+using CitasApp.Interfaces;
+using CitasApp.Models;
+
+namespace CitasApp.Observers
+{
+    public class SmsObserver : ICitaObserver
+    {
+        public void Notificar(Cita cita)
+        {
+            Console.WriteLine($"SMS enviado: la cita #{cita.Id} fue confirmada para el paciente #{cita.PacienteId}.");
+        }
+    }
+}
+```
+
+---
+
+### Observer para Email
+
+```csharp
+using CitasApp.Interfaces;
+using CitasApp.Models;
+
+namespace CitasApp.Observers
+{
+    public class EmailObserver : ICitaObserver
+    {
+        public void Notificar(Cita cita)
+        {
+            Console.WriteLine($"Email enviado: la cita #{cita.Id} fue confirmada para el paciente #{cita.PacienteId}.");
+        }
+    }
+}
+```
+
+---
+
+### Servicio de citas con Observer
+
+En `CitaService.cs` se concentra la lógica para obtener citas, agregar citas y confirmar citas:
 
 ```csharp
 public class CitaService
 {
     private readonly ICitaRepository _citaRepository;
+    private readonly List<ICitaObserver> _observers;
 
-    public CitaService(ICitaRepository citaRepository)
+    public CitaService(ICitaRepository citaRepository, IEnumerable<ICitaObserver> observers)
     {
         _citaRepository = citaRepository;
+        _observers = observers.ToList();
     }
 
     public List<Cita> ObtenerTodos()
@@ -727,6 +1083,87 @@ public class CitaService
     {
         _citaRepository.Agregar(cita);
     }
+
+    public bool Confirmar(int citaId)
+    {
+        var cita = _citaRepository.ObtenerTodos()
+            .FirstOrDefault(c => c.Id == citaId);
+
+        if (cita == null)
+        {
+            return false;
+        }
+
+        cita.Estado = "Confirmada";
+
+        _citaRepository.Actualizar(cita);
+
+        NotificarObservers(cita);
+
+        return true;
+    }
+
+    private void NotificarObservers(Cita cita)
+    {
+        foreach (var observer in _observers)
+        {
+            observer.Notificar(cita);
+        }
+    }
+}
+```
+
+---
+
+### Repositorio de citas actualizado
+
+La interfaz `ICitaRepository` ahora incluye el método `Actualizar`:
+
+```csharp
+using CitasApp.Models;
+
+namespace CitasApp.Interfaces
+{
+    public interface ICitaRepository
+    {
+        List<Cita> ObtenerTodos();
+        List<Cita> ObtenerPorPaciente(int pacienteId);
+        void Agregar(Cita cita);
+        void Actualizar(Cita cita);
+    }
+}
+```
+
+Este método se usa cuando se confirma una cita para guardar el nuevo estado:
+
+```text
+Pendiente → Confirmada
+```
+
+---
+
+### Endpoint para confirmar cita
+
+En `CitasApp.Api/Controllers/CitasController.cs` se agregó el endpoint:
+
+```csharp
+[HttpPost("{id}/confirmar")]
+public IActionResult Confirmar(int id)
+{
+    var confirmado = _citaService.Confirmar(id);
+
+    if (!confirmado)
+    {
+        return NotFound(new
+        {
+            mensaje = "No se encontró la cita"
+        });
+    }
+
+    return Ok(new
+    {
+        mensaje = "Cita confirmada y notificaciones enviadas"
+    });
 }
 ```
 
@@ -968,6 +1405,25 @@ Estos permiten que el proyecto pueda adaptarse a una base de datos local en luga
 
 ---
 
+### Observer
+
+El patrón Observer no guarda datos directamente, sino que reacciona cuando una cita es confirmada.
+
+Ejemplo de flujo:
+
+```text
+Cita confirmada
+    ↓
+CitaService
+    ↓
+Lista de ICitaObserver
+    ↓
+SmsObserver
+EmailObserver
+```
+
+---
+
 ## 📈 Mejoras Futuras
 
 ```text
@@ -1001,6 +1457,16 @@ Estos permiten que el proyecto pueda adaptarse a una base de datos local en luga
 
 [ ] Agregar mensajes visuales cuando se guarde un registro correctamente.
 
+[ ] Agregar confirmación de citas desde la Web MVC.
+
+[ ] Mostrar visualmente el estado Confirmada después de usar el endpoint.
+
+[ ] Crear observers reales para enviar SMS y Email usando servicios externos.
+
+[ ] Agregar historial de notificaciones.
+
+[ ] Evitar notificar dos veces si una cita ya estaba confirmada.
+
 [ ] Documentar mejor la diferencia entre CitasApp.Web y CitasApp.Api.
 
 [ ] Limpiar archivos temporales como bin, obj o respaldos .bak antes de subir a GitHub.
@@ -1010,11 +1476,13 @@ Estos permiten que el proyecto pueda adaptarse a una base de datos local en luga
 
 ## 🏁 Conclusión
 
-Este proyecto permitió aplicar conceptos de arquitectura de software en una aplicación web real usando ASP.NET Core MVC, Web API, servicios, interfaces y repositorios.
+Este proyecto permitió aplicar conceptos de arquitectura de software en una aplicación web real usando ASP.NET Core MVC, Web API, servicios, interfaces, repositorios y el patrón Observer.
 
 La aplicación permite administrar pacientes, médicos y citas médicas de forma sencilla. Además, se agregó una organización por capas para separar los modelos, la lógica de aplicación y la infraestructura de datos.
 
-Aunque el sistema todavía puede mejorar, especialmente en la unificación de la persistencia entre la Web MVC y la API, la base principal ya permite trabajar con una agenda médica funcional, consultar información desde vistas Razor y probar endpoints mediante un panel web.
+Con el reto Observer, el sistema ahora puede confirmar una cita y ejecutar notificaciones simuladas por SMS y Email. Esto se logró sin que `CitaService` dependiera directamente de `Infrastructure`, ya que el servicio trabaja con la interfaz `ICitaObserver` ubicada en `Domain`.
+
+Aunque el sistema todavía puede mejorar, especialmente en la unificación de la persistencia entre la Web MVC y la API, la base principal ya permite trabajar con una agenda médica funcional, consultar información desde vistas Razor, probar endpoints mediante un panel web y confirmar citas desde la API.
 
 ---
 
@@ -1023,5 +1491,5 @@ Aunque el sistema todavía puede mejorar, especialmente en la unificación de la
 ```text
 Yo, Angel Abraham Lugo Saenz, declaro que utilicé IA como apoyo para redactar y organizar este README, explicar con mayor claridad la estructura del proyecto, revisar la comunicación entre capas y documentar el funcionamiento general de CitasApp.
 
-El código, la estructura del proyecto y las decisiones principales fueron trabajadas como parte de la actividad escolar de Arquitectura de Software.
+El código, la estructura del proyecto, la implementación del patrón Observer y las decisiones principales fueron trabajadas como parte de la actividad escolar de Arquitectura de Software.
 ```
