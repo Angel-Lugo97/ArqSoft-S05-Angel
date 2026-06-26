@@ -14,9 +14,31 @@ var sqlitePath = Path.Combine(dataFolder, "citasapp.db");
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddSingleton<IPacienteRepository>(_ => new CsvPacienteRepository(csvPacientes));
-builder.Services.AddSingleton<IMedicoRepository>(_ => new CsvMedicoRepository(csvMedicos));
-builder.Services.AddSingleton<ICitaRepository>(_ => new CsvCitaRepository(csvCitas));
+builder.Services.AddScoped<IPacienteRepository>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+    var repo = RepositoryFactory.CrearPacienteRepository(
+        builder.Environment.EnvironmentName, env);
+
+    return new LoggingPacienteRepository(repo);
+});
+
+builder.Services.AddScoped<IMedicoRepository>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+    return RepositoryFactory.CrearMedicoRepository(
+        builder.Environment.EnvironmentName, env);
+});
+
+builder.Services.AddScoped<ICitaRepository>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+    return RepositoryFactory.CrearCitaRepository(
+        builder.Environment.EnvironmentName, env);
+});
 
 var app = builder.Build();
 

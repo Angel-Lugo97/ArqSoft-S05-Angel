@@ -7,9 +7,31 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Repositorios
-builder.Services.AddScoped<IPacienteRepository, JsonPacienteRepository>();
-builder.Services.AddScoped<IMedicoRepository, JsonMedicoRepository>();
-builder.Services.AddScoped<ICitaRepository, JsonCitaRepository>();
+builder.Services.AddScoped<IPacienteRepository>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+    var repo = RepositoryFactory.CrearPacienteRepository(
+        builder.Environment.EnvironmentName, env);
+
+    return new LoggingPacienteRepository(repo);
+});
+
+builder.Services.AddScoped<IMedicoRepository>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+    return RepositoryFactory.CrearMedicoRepository(
+        builder.Environment.EnvironmentName, env);
+});
+
+builder.Services.AddScoped<ICitaRepository>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+    return RepositoryFactory.CrearCitaRepository(
+        builder.Environment.EnvironmentName, env);
+});
 
 // Servicios de aplicación
 builder.Services.AddScoped<PacienteService>();
