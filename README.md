@@ -361,12 +361,12 @@ También se incluyen los patrones GOF implementados en el proyecto:
 Archivo de documentación UML:
 
 ```text
-docs/doc-UML/uml-citasapp.md
+docs/doc-UML/README.md
 ```
 
 Enlace desde el README:
 
-[Ver documentación UML de CitasApp](docs/doc-UML/uml-citasapp.md)
+[Ver documentación UML de CitasApp](docs/doc-UML/README.md)
 
 Vista previa del diagrama UML generado:
 
