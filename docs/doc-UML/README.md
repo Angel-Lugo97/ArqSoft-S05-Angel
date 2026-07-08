@@ -12,7 +12,7 @@ Este archivo documenta el diagrama UML por capas de **CitasApp**. El diagrama re
 
 ## Código Mermaid del diagrama
 
-```mermaid
+```text
 flowchart TB
     Usuario["Usuario Web"]
     ClienteApi["Cliente API<br/>Swagger / curl"]
