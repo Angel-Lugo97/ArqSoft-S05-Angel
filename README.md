@@ -4,6 +4,8 @@ Este proyecto es una aplicación web desarrollada con **C#, ASP.NET Core MVC y .
 
 El proyecto también incluye una **API REST separada**, servicios de aplicación, modelos de dominio, interfaces, repositorios y la implementación del patrón **Observer** para enviar notificaciones cuando una cita es confirmada.
 
+También se agregó una sección de **documentación UML en Mermaid**, donde se representa la arquitectura por capas del proyecto y los patrones GOF implementados.
+
 Actualmente, la aplicación Web MVC trabaja principalmente con archivos **CSV** ubicados en `wwwroot/data`, mientras que el proyecto `CitasApp.Api` utiliza archivos **JSON** ubicados en su carpeta `Data`.
 
 Además, el reto implementado agrega un sistema de notificaciones donde `CitaService` confirma una cita y notifica a los observers registrados, sin depender directamente de clases de `Infrastructure`.
@@ -19,7 +21,7 @@ Además, el reto implementado agrega un sistema de notificaciones donde `CitaSer
 | **Universidad** | Tecnológico de Software |
 | **Profesor** | Jorge Javier Pedroza Romero |
 | **Materia** | Arquitectura de Software |
-| **Tarea** | Sistema de citas médicas en ASP.NET Core MVC, API REST y patrón Observer |
+| **Tarea** | Sistema de citas médicas en ASP.NET Core MVC, API REST, patrón Observer y documentación UML |
 
 ---
 
@@ -70,6 +72,7 @@ Las restricciones principales del proyecto son:
 * **Base local opcional:** SQLite con `Microsoft.Data.Sqlite`
 * **Documentación visual de API:** Swagger con `Swashbuckle.AspNetCore`
 * **Patrón implementado:** Observer
+* **Documentación UML:** Mermaid
 * **Arquitectura:** Separación por capas
 * **Principio aplicado:** Inversión de dependencias
 * **IDE recomendado:** JetBrains Rider
@@ -104,6 +107,7 @@ Durante el desarrollo se presentaron varios retos importantes:
 * Agregar el método `Actualizar` en los repositorios de citas.
 * Agregar un endpoint `POST` para confirmar una cita desde la API.
 * Configurar Swagger para probar visualmente los endpoints desde el navegador.
+* Agregar un diagrama UML en Mermaid que refleje el estado real del proyecto y los patrones GOF.
 
 ---
 
@@ -227,6 +231,13 @@ ArqSoft-S05-Angel/
 │       ├── Medicos.json
 │       └── Citas.json
 │
+├── docs/
+│   └── doc-UML/
+│       ├── uml-citasapp.md
+│       └── assets/
+│           └── capturas/
+│               └── Diagrama-UML.png
+│
 ├── assets/
 │   ├── 1.png
 │   ├── 2.png
@@ -331,6 +342,179 @@ Observer:
 Implementaciones:
 - SmsObserver.cs
 - EmailObserver.cs
+```
+
+---
+
+## 📐 Diagrama UML por capas
+
+Se agregó documentación UML en **Mermaid** para representar el estado real de CitasApp. El diagrama muestra la separación entre la Web MVC, la API REST, la capa Application, la capa Domain y la capa Infrastructure.
+
+También se incluyen los patrones GOF implementados en el proyecto:
+
+```text
+- Factory: RepositoryFactory
+- Decorator: LoggingPacienteRepository
+- Observer: ICitaObserver, SmsObserver y EmailObserver
+```
+
+Archivo de documentación UML:
+
+```text
+docs/doc-UML/uml-citasapp.md
+```
+
+Enlace desde el README:
+
+[Ver documentación UML de CitasApp](docs/doc-UML/uml-citasapp.md)
+
+Vista previa del diagrama UML generado:
+
+![Diagrama UML de CitasApp](docs/doc-UML/assets/capturas/Diagrama-UML.png)
+
+```mermaid
+flowchart TB
+    Usuario["Usuario Web"]
+    ClienteApi["Cliente API<br/>Swagger / curl"]
+
+    subgraph Web["Presentación Web MVC<br/>CitasApp.Web"]
+        direction TB
+        WebProgram["Program.cs<br/>MVC + Inyección de dependencias"]
+        HomeController["HomeController"]
+        PacienteController["PacienteController"]
+        MedicoController["MedicoController"]
+        CitaController["CitaController"]
+        WebCalculadora["CalculadoraController<br/>api/calculadora"]
+        WebApiControllers["ApiPacientesController<br/>ApiMedicosController<br/>ApiCitasController"]
+        Vistas["Razor Views<br/>wwwroot/js/panel-pruebas.js"]
+    end
+
+    subgraph Api["API REST separada<br/>CitasApp.Api"]
+        direction TB
+        ApiProgram["Program.cs<br/>Swagger + DI"]
+        ApiPacientes["PacientesController"]
+        ApiMedicos["MedicosController"]
+        ApiCitas["CitasController<br/>POST /api/Citas/id/confirmar"]
+        ApiCalculadora["CalculadoraController"]
+    end
+
+    subgraph Application["Application<br/>src/CitasApp.Application"]
+        direction TB
+        PacienteService["PacienteService"]
+        MedicoService["MedicoService"]
+        CitaService["CitaService<br/>Confirmar()<br/>NotificarObservers()"]
+    end
+
+    subgraph Domain["Domain<br/>src/CitasApp.Domain"]
+        direction TB
+        IPacienteRepository["interface<br/>IPacienteRepository"]
+        IMedicoRepository["interface<br/>IMedicoRepository"]
+        ICitaRepository["interface<br/>ICitaRepository"]
+        ICitaObserver["interface<br/>ICitaObserver"]
+
+        Paciente["Paciente"]
+        Medico["Medico"]
+        Cita["Cita"]
+        CitaJson["CitaJson"]
+    end
+
+    subgraph Infrastructure["Infrastructure<br/>src/CitasApp.Infrastructure"]
+        direction TB
+        RepositoryFactory["RepositoryFactory<br/>Patrón GOF: Factory"]
+        LoggingPacienteRepository["LoggingPacienteRepository<br/>Patrón GOF: Decorator"]
+
+        JsonRepositories["JsonPacienteRepository<br/>JsonMedicoRepository<br/>JsonCitaRepository"]
+        CsvRepositories["CsvPacienteRepository<br/>CsvMedicoRepository<br/>CsvCitaRepository"]
+        SqliteRepositories["SqlitePacienteRepository<br/>SqliteMedicoRepository<br/>SqliteCitaRepository"]
+        MemoriaPacienteRepository["MemoriaPacienteRepository"]
+
+        DatosJson["DatosJson<br/>Lectura y escritura de JSON"]
+
+        SmsObserver["SmsObserver<br/>Patrón GOF: Observer"]
+        EmailObserver["EmailObserver<br/>Patrón GOF: Observer"]
+
+        JsonData["Archivos JSON<br/>Data/*.json"]
+        CsvData["Archivos CSV<br/>wwwroot/data/*.csv"]
+        SqliteData["SQLite opcional<br/>citasapp.db"]
+    end
+
+    Usuario --> Vistas
+    Vistas --> HomeController
+    Vistas --> PacienteController
+    Vistas --> MedicoController
+    Vistas --> CitaController
+    Vistas --> WebCalculadora
+    Vistas --> WebApiControllers
+
+    WebProgram -.-> IPacienteRepository
+    WebProgram -.-> IMedicoRepository
+    WebProgram -.-> ICitaRepository
+
+    PacienteController --> IPacienteRepository
+    MedicoController --> IMedicoRepository
+    CitaController --> ICitaRepository
+    CitaController --> IPacienteRepository
+    CitaController --> IMedicoRepository
+    WebApiControllers --> IPacienteRepository
+    WebApiControllers --> IMedicoRepository
+    WebApiControllers --> ICitaRepository
+
+    ClienteApi --> ApiPacientes
+    ClienteApi --> ApiMedicos
+    ClienteApi --> ApiCitas
+    ClienteApi --> ApiCalculadora
+
+    ApiProgram -.-> PacienteService
+    ApiProgram -.-> MedicoService
+    ApiProgram -.-> CitaService
+    ApiProgram -.-> ICitaObserver
+
+    ApiPacientes --> PacienteService
+    ApiMedicos --> MedicoService
+    ApiCitas --> CitaService
+
+    PacienteService --> IPacienteRepository
+    MedicoService --> IMedicoRepository
+    CitaService --> ICitaRepository
+    CitaService --> ICitaObserver
+
+    RepositoryFactory -.-> IPacienteRepository
+    RepositoryFactory -.-> IMedicoRepository
+    RepositoryFactory -.-> ICitaRepository
+    RepositoryFactory --> JsonRepositories
+    RepositoryFactory --> CsvRepositories
+    RepositoryFactory --> SqliteRepositories
+    RepositoryFactory --> MemoriaPacienteRepository
+
+    LoggingPacienteRepository -.-> IPacienteRepository
+    LoggingPacienteRepository --> IPacienteRepository
+
+    JsonRepositories -.-> IPacienteRepository
+    JsonRepositories -.-> IMedicoRepository
+    JsonRepositories -.-> ICitaRepository
+
+    CsvRepositories -.-> IPacienteRepository
+    CsvRepositories -.-> IMedicoRepository
+    CsvRepositories -.-> ICitaRepository
+
+    SqliteRepositories -.-> IPacienteRepository
+    SqliteRepositories -.-> IMedicoRepository
+    SqliteRepositories -.-> ICitaRepository
+
+    MemoriaPacienteRepository -.-> IPacienteRepository
+
+    SmsObserver -.-> ICitaObserver
+    EmailObserver -.-> ICitaObserver
+
+    IPacienteRepository -.-> Paciente
+    IMedicoRepository -.-> Medico
+    ICitaRepository -.-> Cita
+    ICitaObserver -.-> Cita
+
+    JsonRepositories --> DatosJson
+    DatosJson --> JsonData
+    CsvRepositories --> CsvData
+    SqliteRepositories --> SqliteData
 ```
 
 ---
@@ -559,6 +743,7 @@ Se creó una aplicación de citas médicas organizada en varias partes:
 - Se configuró Swagger para probar endpoints desde el navegador.
 - Se agregaron estilos personalizados para la interfaz.
 - Se agregaron capturas de evidencia dentro de assets.
+- Se agregó documentación UML en Mermaid para representar la arquitectura por capas y los patrones GOF.
 ```
 
 ---
@@ -586,6 +771,7 @@ Se creó una aplicación de citas médicas organizada en varias partes:
 18. CitaService recorre su lista de observers.
 19. SmsObserver muestra una notificación simulada por SMS.
 20. EmailObserver muestra una notificación simulada por Email.
+21. El diagrama UML en Mermaid documenta la relación entre capas, servicios, repositorios y patrones GOF.
 ```
 
 ---
@@ -1484,12 +1670,14 @@ Con el reto Observer, el sistema ahora puede confirmar una cita y ejecutar notif
 
 Aunque el sistema todavía puede mejorar, especialmente en la unificación de la persistencia entre la Web MVC y la API, la base principal ya permite trabajar con una agenda médica funcional, consultar información desde vistas Razor, probar endpoints mediante un panel web y confirmar citas desde la API.
 
+Además, el README ahora incluye una sección de UML en Mermaid para documentar visualmente la estructura real del sistema, incluyendo las capas principales y los patrones GOF usados.
+
 ---
 
 ## Cláusula de IA
 
 ```text
-Yo, Angel Abraham Lugo Saenz, declaro que utilicé IA como apoyo para redactar y organizar este README, explicar con mayor claridad la estructura del proyecto, revisar la comunicación entre capas y documentar el funcionamiento general de CitasApp.
+Yo, Angel Abraham Lugo Saenz, declaro que utilicé IA como apoyo para redactar y organizar este README, explicar con mayor claridad la estructura del proyecto, revisar la comunicación entre capas, agregar la sección UML en Mermaid y documentar el funcionamiento general de CitasApp.
 
 El código, la estructura del proyecto, la implementación del patrón Observer y las decisiones principales fueron trabajadas como parte de la actividad escolar de Arquitectura de Software.
 ```
