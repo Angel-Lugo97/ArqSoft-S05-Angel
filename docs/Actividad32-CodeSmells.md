@@ -65,3 +65,17 @@ La refactorización no debe modificar:
 - Los repositorios
 - Las notificaciones mediante Observer
 - La forma en que se almacenan las citas
+
+## Resultado de la refactorización
+
+Se creó la interfaz ICitaService y se modificó CitaService para implementar dicha abstracción.
+
+CitasController dejó de depender directamente de CitaService, PacienteService y MedicoService. Ahora recibe únicamente ICitaService mediante inyección de dependencias.
+
+La configuración se realizó en CitasApp.Api/Program.cs mediante el registro:
+
+builder.Services.AddScoped<ICitaService, CitaService>();
+
+Después de la refactorización, la solución continuó compilando correctamente y tanto la aplicación Web MVC como la API conservaron su comportamiento.
+
+No se modificaron las rutas, los modelos, los códigos HTTP, las vistas ni el almacenamiento de datos.
