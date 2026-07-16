@@ -636,6 +636,18 @@ Responsabilidad de cada capa:
 | **CitasApp.Domain** | Modelos e interfaces centrales |
 | **CitasApp.Infrastructure** | Repositorios, Npgsql, SQLite, JSON, CSV y observers concretos |
 
+## Diagrama UML por capas
+
+La documentación UML del proyecto se encuentra en:
+
+```text
+docs/doc-UML/README.md
+```
+
+[Ver documentación UML de CitasApp](docs/doc-UML/README.md)
+
+![Diagrama UML de CitasApp](docs/doc-UML/assets/capturas/Diagrama-UML.png)
+
 ---
 
 # Estructura principal
@@ -1138,19 +1150,41 @@ Es un `NOTICE`, no un error. El script evita duplicar tablas e índices existent
 
 ---
 
-# Evidencias recomendadas
+# Evidencias de ejecución
 
-Para la entrega pueden incluirse capturas de:
+Las imágenes existentes del proyecto se conservan dentro de la carpeta `assets/` y se muestran a continuación.
+
+## Página principal y panel de endpoints
+
+Esta captura muestra la página principal de CitasApp con el panel para probar los endpoints disponibles.
+
+![Página principal de CitasApp](assets/1.png)
+
+## Comprobación del patrón Observer
+
+Esta evidencia muestra la comprobación por terminal del comportamiento relacionado con las notificaciones de citas.
+
+![Comprobación por terminal del patrón Observer](assets/2.png)
+
+## Interfaz Web de CitasApp
+
+Esta captura muestra la aplicación Web MVC funcionando con su menú de navegación y las vistas del sistema.
+
+![Visualización de CitasApp en la página Web](assets/3.png)
+
+## Evidencias adicionales recomendadas para la rama `Code-Smell`
+
+También pueden agregarse capturas de:
 
 - Rama `Code-Smell` activa.
-- Historial con el commit antes y después de la refactorización.
+- Historial con el commit anterior y el commit posterior a la refactorización.
 - Diff donde `CitasController` cambia de `CitaService` a `ICitaService`.
-- Compilación exitosa.
+- Compilación exitosa de `CitasApp.sln`.
 - Interfaz Web funcionando en `localhost:5018`.
 - Swagger funcionando en `localhost:5057/swagger`.
-- Tablas `pacientes`, `medicos` y `citas` en pgAdmin.
-- Consulta SQL mostrando los datos migrados.
-- Registro nuevo creado desde la Web y visible en PostgreSQL.
+- Tablas `pacientes`, `medicos` y `citas` en pgAdmin 4.
+- Consulta SQL mostrando los datos migrados desde los archivos originales.
+- Registro creado desde la Web y visible posteriormente en PostgreSQL.
 
 ---
 
