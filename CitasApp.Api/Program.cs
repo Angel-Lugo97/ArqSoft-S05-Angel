@@ -1,3 +1,4 @@
+using CitasApp.Application.Interfaces;
 using CitasApp.Application.Services;
 using CitasApp.Interfaces;
 using CitasApp.Repositories;
@@ -43,7 +44,7 @@ builder.Services.AddScoped<ICitaObserver, EmailObserver>();
 // Servicios de aplicación
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<MedicoService>();
-builder.Services.AddScoped<CitaService>();
+builder.Services.AddScoped<ICitaService, CitaService>();
 
 var app = builder.Build();
 

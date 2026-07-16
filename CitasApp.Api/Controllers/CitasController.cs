@@ -1,4 +1,4 @@
-using CitasApp.Application.Services;
+using CitasApp.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CitasApp.Api.Controllers
@@ -7,18 +7,11 @@ namespace CitasApp.Api.Controllers
     [Route("api/[controller]")]
     public class CitasController : ControllerBase
     {
-        private readonly CitaService _citaService;
-        private readonly PacienteService _pacienteService;
-        private readonly MedicoService _medicoService;
+        private readonly ICitaService _citaService;
 
-        public CitasController(
-            CitaService citaService,
-            PacienteService pacienteService,
-            MedicoService medicoService)
+        public CitasController(ICitaService citaService)
         {
             _citaService = citaService;
-            _pacienteService = pacienteService;
-            _medicoService = medicoService;
         }
 
         [HttpGet]

@@ -1,14 +1,17 @@
+using CitasApp.Application.Interfaces;
 using CitasApp.Interfaces;
 using CitasApp.Models;
 
 namespace CitasApp.Application.Services
 {
-    public class CitaService
+    public class CitaService : ICitaService
     {
         private readonly ICitaRepository _citaRepository;
         private readonly List<ICitaObserver> _observers;
 
-        public CitaService(ICitaRepository citaRepository, IEnumerable<ICitaObserver> observers)
+        public CitaService(
+            ICitaRepository citaRepository,
+            IEnumerable<ICitaObserver> observers)
         {
             _citaRepository = citaRepository;
             _observers = observers.ToList();
@@ -31,7 +34,8 @@ namespace CitasApp.Application.Services
 
         public bool Confirmar(int citaId)
         {
-            var cita = _citaRepository.ObtenerTodos()
+            var cita = _citaRepository
+                .ObtenerTodos()
                 .FirstOrDefault(c => c.Id == citaId);
 
             if (cita == null)
