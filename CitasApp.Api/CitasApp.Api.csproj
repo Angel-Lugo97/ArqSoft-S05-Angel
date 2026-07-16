@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <UserSecretsId>450b51e7-7a06-4a0a-a5d9-525638b9fc9c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
