@@ -30,6 +30,6 @@ public class PacienteServiceTests
         // Assert
         Assert.NotNull(paciente);
         Assert.Equal(1, paciente.Id);
-        Assert.Equal("Ana", paciente.Nombre);
+        Assert.Equal("NombreIncorrecto", paciente.Nombre);
     }
 }
