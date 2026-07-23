@@ -1,13 +1,8 @@
-# CitasApp — Refactorización de Code Smells y conexión con PostgreSQL
+# CitasApp — Pruebas unitarias e Integración Continua
 
-Este repositorio contiene una aplicación para la gestión de citas médicas desarrollada con **C#, ASP.NET Core MVC, ASP.NET Core Web API y .NET 10**. La solución permite administrar pacientes, médicos y citas, además de consultar información mediante una interfaz Web MVC y una API REST separada.
+Este repositorio contiene una aplicación para la gestión de citas médicas desarrollada con **C#, ASP.NET Core MVC, ASP.NET Core Web API y .NET 10**.
 
-La rama **`Code-Smell`** está enfocada en dos mejoras principales:
-
-1. Identificar y refactorizar code smells sin cambiar el comportamiento observable del sistema.
-2. Preparar la migración del almacenamiento basado en archivos JSON, CSV o SQLite hacia una base de datos PostgreSQL llamada **`CitasAp`**.
-
-La refactorización principal aplica **Dependency Injection** mediante la interfaz `ICitaService`, con el objetivo de reducir el acoplamiento del controlador de citas de la API. La integración con PostgreSQL utiliza **Npgsql**, una cuenta exclusiva para la aplicación y **User Secrets** para evitar almacenar contraseñas dentro del repositorio.
+La rama **`CI/CD`** está enfocada en incorporar pruebas unitarias con **xUnit** y un flujo de **Integración Continua con GitHub Actions**, de modo que cada cambio enviado al repositorio sea restaurado, compilado y probado automáticamente.
 
 ---
 
@@ -20,589 +15,305 @@ La refactorización principal aplica **Dependency Injection** mediante la interf
 | **Universidad** | Tecnológico de Software |
 | **Profesor** | Jorge Javier Pedroza Romero |
 | **Materia** | Arquitectura de Software |
-| **Actividad** | Actividad 32 — Code smells, refactorización y persistencia con PostgreSQL |
-| **Rama de trabajo** | `Code-Smell` |
+| **Actividad** | Pruebas unitarias e Integración Continua |
+| **Rama de trabajo** | `CI/CD` |
 
 ---
 
-## Objetivo de la rama `Code-Smell`
+# Objetivo de la rama `CI/CD`
 
-El objetivo de esta rama es mejorar la estructura interna de CitasApp sin modificar las funciones que ya utiliza el usuario.
+El objetivo de esta rama es comprobar automáticamente que los cambios realizados en CitasApp no rompan el comportamiento esperado del sistema.
 
-La actividad solicita:
+En esta rama se implementó:
 
-- Identificar al menos dos code smells.
-- Aplicar por lo menos una técnica de refactorización.
-- Mantener el mismo comportamiento antes y después del cambio.
-- Contar con un commit anterior y otro posterior a la refactorización.
-- Mostrar mediante el diff que el cambio fue estructural y no una reescritura completa.
-- Documentar la deuda técnica identificada.
-- Preparar la conexión con PostgreSQL para reemplazar progresivamente la persistencia basada en archivos.
+- Una primera prueba unitaria con xUnit
+- La estructura Arrange, Act y Assert
+- La clase `CitaFactory`
+- El proyecto `CitasApp.Domain.Tests`
+- Un workflow de GitHub Actions
+- Ejecución automática en cada `push` y Pull Request
 
----
-
-## Funcionalidades principales
-
-### Gestión de pacientes
-
-- Consultar pacientes registrados.
-- Registrar nuevos pacientes.
-- Consultar el detalle de un paciente.
-- Obtener pacientes desde endpoints REST.
-
-### Gestión de médicos
-
-- Consultar médicos registrados.
-- Registrar nuevos médicos.
-- Consultar especialidad y número de licencia.
-- Obtener médicos desde endpoints REST.
-
-### Gestión de citas
-
-- Consultar la agenda general.
-- Crear nuevas citas.
-- Relacionar cada cita con un paciente y un médico.
-- Buscar citas por paciente.
-- Confirmar citas mediante la API.
-- Actualizar el estado de una cita de `Pendiente` a `Confirmada`.
-
-### Notificaciones con Observer
-
-Cuando una cita es confirmada, `CitaService` actualiza su estado y notifica a las implementaciones registradas de `ICitaObserver`:
-
-- `SmsObserver`
-- `EmailObserver`
-
-El flujo es el siguiente:
+El flujo general es:
 
 ```text
-POST /api/Citas/{id}/confirmar
+git push o Pull Request
         ↓
-CitasController
+GitHub Actions detecta el cambio
         ↓
-ICitaService
+Configura .NET 10
         ↓
-CitaService
+Restaura dependencias
         ↓
-ICitaRepository.Actualizar(cita)
+Compila CitasApp.sln
         ↓
-ICitaObserver.Notificar(cita)
+Ejecuta las pruebas xUnit
         ↓
-SmsObserver y EmailObserver
+Check verde o check rojo
 ```
 
 ---
 
-## Tecnologías utilizadas
+# Prueba unitaria con xUnit
 
-- **Lenguaje:** C#
-- **Framework principal:** ASP.NET Core
-- **Aplicación Web:** ASP.NET Core MVC
-- **API:** ASP.NET Core Web API
-- **Versión del framework:** .NET 10
-- **Vistas:** Razor Views
-- **Frontend:** HTML, CSS, JavaScript y Bootstrap
-- **Base de datos:** PostgreSQL
-- **Administrador gráfico:** pgAdmin 4
-- **Proveedor de acceso a datos:** Npgsql
-- **Persistencia anterior:** JSON, CSV y SQLite
-- **Documentación de API:** Swagger / OpenAPI
-- **Control de versiones:** Git y GitHub
-- **IDE utilizado:** JetBrains Rider
-- **Sistema operativo:** Arch Linux
-- **Arquitectura:** Separación por capas
-- **Patrones utilizados:** Factory, Decorator y Observer
-- **Técnica de refactorización aplicada:** Dependency Injection
+Una prueba unitaria comprueba una parte pequeña y específica del código.
 
----
-
-# Actividad 32 — Code smells identificados
-
-## 1. Tight Coupling
-
-### Ubicación
+En esta rama, la prueba representa la siguiente promesa:
 
 ```text
-CitasApp.Api/Controllers/CitasController.cs
+Si CitaFactory recibe datos válidos,
+debe crear una Cita con estado Pendiente
+y conservar correctamente el PacienteId.
 ```
 
-### Problema encontrado
+La prueba se encuentra en:
 
-Antes de la refactorización, el controlador dependía directamente de tres clases concretas:
-
-```csharp
-private readonly CitaService _citaService;
-private readonly PacienteService _pacienteService;
-private readonly MedicoService _medicoService;
+```text
+tests/CitasApp.Domain.Tests/CitaFactoryTests.cs
 ```
 
-El constructor también recibía los tres servicios:
+Código implementado:
 
 ```csharp
-public CitasController(
-    CitaService citaService,
-    PacienteService pacienteService,
-    MedicoService medicoService)
+using CitasApp.Factories;
+
+namespace CitasApp.Domain.Tests;
+
+public class CitaFactoryTests
 {
-    _citaService = citaService;
-    _pacienteService = pacienteService;
-    _medicoService = medicoService;
+    [Fact]
+    public void Construir_ConDatosValidos_CreaCitaConEstadoPendiente()
+    {
+        // Arrange
+        var factory = new CitaFactory();
+
+        // Act
+        var cita = factory.Construir(
+            pacienteId: 1,
+            medicoId: 2,
+            fecha: new DateOnly(2026, 7, 20),
+            hora: new TimeOnly(10, 0),
+            motivo: "Consulta"
+        );
+
+        // Assert
+        Assert.Equal("Pendiente", cita.Estado);
+        Assert.Equal(1, cita.PacienteId);
+    }
 }
 ```
 
-Sin embargo, `PacienteService` y `MedicoService` no eran utilizados por las acciones del controlador. Además, depender directamente de `CitaService` hacía que el controlador conociera una implementación concreta.
-
-### Consecuencias
-
-- Mayor acoplamiento entre el controlador y la capa Application.
-- Dependencias innecesarias en el constructor.
-- Mayor dificultad para sustituir o probar el servicio.
-- El controlador requeriría cambios si se reemplazara la implementación concreta.
-
-### Técnica aplicada
-
-Se aplicó **Dependency Injection basada en una interfaz**.
-
-Se creó:
+Resultado obtenido:
 
 ```text
-src/CitasApp.Application/Interfaces/ICitaService.cs
+Test summary: total: 1, failed: 0, succeeded: 1, skipped: 0
 ```
 
-La interfaz define las operaciones necesarias:
+---
+
+# Arrange, Act y Assert
+
+| Etapa | Qué hace | Aplicación en la prueba |
+| :--- | :--- | :--- |
+| **Arrange** | Prepara los objetos y datos necesarios | Crear `CitaFactory` |
+| **Act** | Ejecuta el comportamiento que se quiere probar | Llamar a `Construir(...)` |
+| **Assert** | Comprueba que el resultado sea el esperado | Verificar `Estado` y `PacienteId` |
+
+## Arrange
 
 ```csharp
-public interface ICitaService
+var factory = new CitaFactory();
+```
+
+## Act
+
+```csharp
+var cita = factory.Construir(
+    pacienteId: 1,
+    medicoId: 2,
+    fecha: new DateOnly(2026, 7, 20),
+    hora: new TimeOnly(10, 0),
+    motivo: "Consulta"
+);
+```
+
+## Assert
+
+```csharp
+Assert.Equal("Pendiente", cita.Estado);
+Assert.Equal(1, cita.PacienteId);
+```
+
+Si un cambio futuro modifica el comportamiento de `CitaFactory`, la prueba fallará antes de que el problema llegue al usuario.
+
+---
+
+# CitaFactory
+
+La clase se encuentra en:
+
+```text
+src/CitasApp.Domain/Factories/CitaFactory.cs
+```
+
+Su responsabilidad es construir una entidad `Cita` y asignar el estado inicial `Pendiente`.
+
+```csharp
+using CitasApp.Models;
+
+namespace CitasApp.Factories;
+
+public class CitaFactory
 {
-    List<Cita> ObtenerTodos();
-    List<Cita> ObtenerPorPaciente(int pacienteId);
-    void Agregar(Cita cita);
-    bool Confirmar(int citaId);
+    public Cita Construir(
+        int pacienteId,
+        int medicoId,
+        DateOnly fecha,
+        TimeOnly hora,
+        string motivo)
+    {
+        return new Cita
+        {
+            PacienteId = pacienteId,
+            MedicoId = medicoId,
+            Fecha = fecha,
+            Hora = hora,
+            Motivo = motivo,
+            Estado = "Pendiente"
+        };
+    }
 }
 ```
 
-Después, `CitaService` implementa la interfaz:
+---
 
-```csharp
-public class CitaService : ICitaService
-```
+# Proyecto de pruebas
 
-El controlador ahora depende solamente de la abstracción que utiliza:
-
-```csharp
-private readonly ICitaService _citaService;
-
-public CitasController(ICitaService citaService)
-{
-    _citaService = citaService;
-}
-```
-
-La implementación concreta se conecta desde `CitasApp.Api/Program.cs`:
-
-```csharp
-builder.Services.AddScoped<ICitaService, CitaService>();
-```
-
-### Resultado
+Se creó el proyecto:
 
 ```text
-Antes:
-CitasController → CitaService
-CitasController → PacienteService sin utilizar
-CitasController → MedicoService sin utilizar
-
-Después:
-CitasController → ICitaService → CitaService
+tests/CitasApp.Domain.Tests/
 ```
 
-El controlador mantiene los mismos endpoints y respuestas HTTP, pero tiene menos dependencias y menor acoplamiento.
-
----
-
-## 2. Señal de God Class
-
-### Ubicación
+La dependencia principal es:
 
 ```text
-Controllers/CitaController.cs
+CitasApp.Domain.Tests
+        ↓
+CitasApp.Domain
 ```
 
-### Problema encontrado
+Comando utilizado para agregar la referencia:
 
-El controlador MVC de citas concentra varias responsabilidades:
+```bash
+dotnet add   tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj   reference src/CitasApp.Domain/CitasApp.Domain.csproj
+```
 
-- Consulta las citas.
-- Consulta pacientes.
-- Consulta médicos.
-- Prepara información para las vistas.
-- Construye valores predeterminados para una cita.
-- Valida el formulario.
-- Guarda registros.
+Comando para agregar el proyecto a la solución:
 
-Aunque la clase todavía no tiene un tamaño extremo, presenta una señal de crecimiento hacia una **God Class**, ya que mezcla presentación, preparación de formularios y acceso a datos.
+```bash
+dotnet sln CitasApp.sln add   tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj
+```
 
-### Propuesta de mejora
+---
 
-La técnica recomendada es **Extract Class** para mover la preparación del formulario a una clase como:
+# Integración Continua
+
+La Integración Continua, conocida como **CI**, permite verificar automáticamente cada cambio que se envía al repositorio.
+
+En este proyecto, CI responde la pregunta:
 
 ```text
-CitaFormService
+¿Mi cambio rompió algo?
 ```
 
-Esta clase podría encargarse de:
-
-- Obtener pacientes disponibles.
-- Obtener médicos disponibles.
-- Construir la cita inicial.
-- Preparar la información necesaria para las vistas.
-
-La Actividad 32 exige identificar al menos dos code smells y aplicar por lo menos una técnica. En esta rama, la técnica implementada y comprobada es **Dependency Injection** para corregir el Tight Coupling.
-
----
-
-# Refactorizar no significa reescribir
-
-La refactorización realizada conserva el comportamiento observable del sistema:
-
-- No se modificaron las rutas de la Web MVC.
-- No se modificaron los endpoints de la API.
-- No se cambiaron los modelos de dominio.
-- No se cambiaron los mensajes de respuesta.
-- No se modificaron los códigos HTTP.
-- No se eliminaron las notificaciones Observer.
-- No se cambió la apariencia de la interfaz.
-
-El cambio se realizó en pasos pequeños y quedó dividido en commits para mostrar el estado anterior y posterior.
-
----
-
-# Deuda técnica identificada
-
-## Qué es
-
-Los controladores conocían demasiados detalles sobre clases concretas y sobre la forma de preparar o consultar los datos.
-
-## Por qué existe
-
-El proyecto fue creciendo a lo largo de varias actividades. Para implementar nuevas funciones rápidamente, algunas dependencias y responsabilidades se agregaron directamente en los controladores.
-
-## Costo de no corregirla
-
-- Los controladores pueden seguir creciendo.
-- Las pruebas se vuelven más difíciles.
-- Cambiar una implementación concreta puede obligar a modificar varios archivos.
-- La persistencia basada en diferentes archivos puede producir datos separados entre la Web y la API.
-- Los archivos JSON o CSV no ofrecen el mismo control de integridad que una base de datos relacional.
-
-## Solución aplicada o propuesta
-
-- Dependency Injection mediante `ICitaService`.
-- Eliminación de dependencias no utilizadas.
-- Extract Class para responsabilidades de formularios.
-- PostgreSQL como fuente central de persistencia.
-- User Secrets para proteger la cadena de conexión durante el desarrollo.
-
----
-
-# Migración a PostgreSQL
-
-## Objetivo
-
-La aplicación utilizaba repositorios basados en JSON, CSV y SQLite. La rama `Code-Smell` prepara la migración hacia PostgreSQL para que pacientes, médicos y citas se almacenen en una fuente central.
-
-La base de datos utilizada se llama:
+GitHub Actions ejecuta:
 
 ```text
-CitasAp
+1. Restaurar dependencias
+2. Compilar la solución
+3. Ejecutar las pruebas
 ```
 
-El objetivo del cambio es que:
-
-- Los datos iniciales se migren desde los archivos existentes.
-- Los nuevos registros se guarden en PostgreSQL.
-- La información permanezca disponible después de reiniciar la aplicación.
-- La Web MVC y la API puedan trabajar con la misma fuente de datos.
-- La contraseña no se almacene en GitHub.
+Si todo funciona, GitHub muestra un check verde. Si algo falla, muestra un check rojo con el registro del error.
 
 ---
 
-## Modelo relacional
+# Diferencia entre CI y CD
 
-### Tabla `pacientes`
-
-| Columna | Tipo | Restricción |
+| Concepto | Descripción | Pregunta que responde |
 | :--- | :--- | :--- |
-| `id` | `INTEGER` | Llave primaria e identidad |
-| `nombre` | `VARCHAR(100)` | Obligatorio |
-| `apellido` | `VARCHAR(100)` | Obligatorio |
-| `email` | `VARCHAR(150)` | Obligatorio |
-| `telefono` | `VARCHAR(30)` | Obligatorio |
+| **CI** | Compila y ejecuta pruebas automáticamente | ¿Mi cambio rompió algo? |
+| **CD** | Entrega o despliega automáticamente el sistema | ¿Mi cambio ya está publicado? |
 
-### Tabla `medicos`
+La automatización implementada en esta rama se concentra en **CI**. El despliegue automático queda como mejora futura.
 
-| Columna | Tipo | Restricción |
-| :--- | :--- | :--- |
-| `id` | `INTEGER` | Llave primaria e identidad |
-| `nombre` | `VARCHAR(100)` | Obligatorio |
-| `apellido` | `VARCHAR(100)` | Obligatorio |
-| `especialidad` | `VARCHAR(150)` | Obligatorio |
-| `numero_licencia` | `VARCHAR(80)` | Obligatorio |
+---
 
-### Tabla `citas`
+# GitHub Actions
 
-| Columna | Tipo | Restricción |
-| :--- | :--- | :--- |
-| `id` | `INTEGER` | Llave primaria e identidad |
-| `paciente_id` | `INTEGER` | Llave foránea a `pacientes` |
-| `medico_id` | `INTEGER` | Llave foránea a `medicos` |
-| `fecha` | `DATE` | Obligatorio |
-| `hora` | `TIME` | Obligatorio |
-| `motivo` | `VARCHAR(500)` | Obligatorio |
-| `estado` | `VARCHAR(30)` | Valor inicial `Pendiente` |
-
-Relaciones principales:
+El workflow se encuentra en:
 
 ```text
-pacientes 1 ─── N citas N ─── 1 medicos
+.github/workflows/ci.yml
+```
+
+Contenido:
+
+```yaml
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Compilar y ejecutar pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar dependencias
+        run: dotnet restore CitasApp.sln
+
+      - name: Compilar solución
+        run: dotnet build CitasApp.sln --configuration Release --no-restore
+
+      - name: Ejecutar pruebas xUnit
+        run: dotnet test tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj --configuration Release --no-build --verbosity normal
+```
+
+El workflow usa .NET 10 porque la solución está configurada con:
+
+```xml
+<TargetFramework>net10.0</TargetFramework>
 ```
 
 ---
 
-## Script de base de datos
+# Eventos que activan el workflow
 
-El repositorio incluye el script:
-
-```text
-database/01_schema_seed.sql
+```yaml
+on:
+  push:
+  pull_request:
 ```
 
-Este archivo se encarga de:
+Esto hace que GitHub Actions se ejecute cuando:
 
-- Crear las tablas `pacientes`, `medicos` y `citas`.
-- Crear las claves primarias y foráneas.
-- Crear índices para las búsquedas por paciente y médico.
-- Insertar los datos iniciales.
-- Ajustar las secuencias para generar nuevos IDs.
-
-Para ejecutarlo desde pgAdmin 4:
-
-```text
-1. Abrir pgAdmin 4.
-2. Seleccionar la base CitasAp.
-3. Abrir Tools → Query Tool.
-4. Abrir database/01_schema_seed.sql.
-5. Ejecutar el script.
-6. Actualizar Schemas → public → Tables.
-```
-
-Los mensajes como los siguientes son informativos y no representan un error:
-
-```text
-NOTICE: relation "pacientes" already exists, skipping
-NOTICE: relation "medicos" already exists, skipping
-NOTICE: relation "citas" already exists, skipping
-```
-
-Aparecen porque el script utiliza `CREATE TABLE IF NOT EXISTS` y puede ejecutarse más de una vez sin volver a crear las tablas.
-
----
-
-## Verificar los datos en pgAdmin
-
-```sql
-SELECT * FROM pacientes ORDER BY id;
-SELECT * FROM medicos ORDER BY id;
-SELECT * FROM citas ORDER BY id;
-```
-
-Consultar las cantidades:
-
-```sql
-SELECT
-    (SELECT COUNT(*) FROM pacientes) AS pacientes,
-    (SELECT COUNT(*) FROM medicos) AS medicos,
-    (SELECT COUNT(*) FROM citas) AS citas;
-```
-
-Verificar el usuario de la aplicación:
-
-```sql
-SELECT rolname
-FROM pg_roles
-WHERE rolname = 'citasapp_user';
-```
-
----
-
-## Usuario exclusivo para la aplicación
-
-La aplicación no debe conectarse con el usuario administrador `postgres`. Se utiliza una cuenta específica:
-
-```text
-citasapp_user
-```
-
-Ejemplo para crearla desde pgAdmin:
-
-```sql
-CREATE ROLE citasapp_user
-WITH LOGIN
-PASSWORD 'COLOCA_AQUI_UNA_PASSWORD_SEGURA';
-```
-
-Permisos necesarios:
-
-```sql
-GRANT CONNECT
-ON DATABASE "CitasAp"
-TO citasapp_user;
-
-GRANT USAGE
-ON SCHEMA public
-TO citasapp_user;
-
-GRANT SELECT, INSERT, UPDATE, DELETE
-ON ALL TABLES IN SCHEMA public
-TO citasapp_user;
-
-GRANT USAGE, SELECT, UPDATE
-ON ALL SEQUENCES IN SCHEMA public
-TO citasapp_user;
-```
-
-La contraseña real no debe agregarse a este archivo ni a ningún commit.
-
----
-
-# Configuración de Npgsql
-
-Npgsql es el proveedor utilizado para conectar .NET con PostgreSQL.
-
-Instalar el paquete en Infrastructure:
-
-```bash
-dotnet add \
-  src/CitasApp.Infrastructure/CitasApp.Infrastructure.csproj \
-  package Npgsql
-```
-
-Restaurar dependencias:
-
-```bash
-dotnet restore CitasApp.sln
-```
-
-Verificar la referencia:
-
-```bash
-grep -n "Npgsql" \
-  src/CitasApp.Infrastructure/CitasApp.Infrastructure.csproj
-```
-
----
-
-# Configuración segura con User Secrets
-
-La cadena de conexión no debe escribirse directamente en `Program.cs`, `appsettings.json` o el README.
-
-Inicializar User Secrets para la aplicación Web:
-
-```bash
-dotnet user-secrets init \
-  --project CitasApp.Web.csproj
-```
-
-Inicializar User Secrets para la API:
-
-```bash
-dotnet user-secrets init \
-  --project CitasApp.Api/CitasApp.Api.csproj
-```
-
-Capturar la contraseña sin mostrarla en pantalla:
-
-```bash
-read -s -p "Contraseña de citasapp_user: " DB_PASSWORD
-echo
-```
-
-Guardar la cadena de conexión para la Web:
-
-```bash
-dotnet user-secrets set \
-  "ConnectionStrings:CitasAppDb" \
-  "Host=localhost;Port=5432;Database=CitasAp;Username=citasapp_user;Password=${DB_PASSWORD}" \
-  --project CitasApp.Web.csproj
-```
-
-Guardar la cadena de conexión para la API:
-
-```bash
-dotnet user-secrets set \
-  "ConnectionStrings:CitasAppDb" \
-  "Host=localhost;Port=5432;Database=CitasAp;Username=citasapp_user;Password=${DB_PASSWORD}" \
-  --project CitasApp.Api/CitasApp.Api.csproj
-```
-
-Eliminar la variable temporal:
-
-```bash
-unset DB_PASSWORD
-```
-
-Comprobar que existe la clave:
-
-```bash
-dotnet user-secrets list --project CitasApp.Web.csproj
-dotnet user-secrets list --project CitasApp.Api/CitasApp.Api.csproj
-```
-
-> **Advertencia:** `dotnet user-secrets list` puede mostrar la contraseña en la terminal. No compartas capturas de esa salida.
-
----
-
-# Flujo esperado con PostgreSQL
-
-```text
-Aplicación Web MVC — localhost:5018
-        ↓
-Controladores MVC
-        ↓
-Interfaces de repositorio
-        ↓
-Repositorios PostgreSQL
-        ↓
-Npgsql
-        ↓
-Base de datos CitasAp
-```
-
-```text
-API REST — localhost:5057
-        ↓
-Controladores API
-        ↓
-Servicios de Application
-        ↓
-Interfaces de repositorio
-        ↓
-Repositorios PostgreSQL
-        ↓
-Npgsql
-        ↓
-Base de datos CitasAp
-```
-
-Los repositorios PostgreSQL deben implementar las interfaces existentes:
-
-```text
-IPacienteRepository
-IMedicoRepository
-ICitaRepository
-```
-
-Esto permite cambiar la fuente de persistencia desde `Program.cs` sin modificar los controladores ni los modelos del dominio.
+- Se realiza un `push`
+- Se crea un Pull Request
+- Se agregan commits a un Pull Request existente
 
 ---
 
@@ -624,21 +335,25 @@ CitasApp.Application
 CitasApp.Domain
     ↑
 CitasApp.Infrastructure
-```
 
-Responsabilidad de cada capa:
+CitasApp.Domain.Tests
+    ↓
+CitasApp.Domain
+```
 
 | Capa | Responsabilidad |
 | :--- | :--- |
-| **CitasApp.Web** | Interfaz MVC, vistas Razor, controladores y navegación |
+| **CitasApp.Web** | Interfaz MVC, vistas Razor y controladores |
 | **CitasApp.Api** | Endpoints REST y Swagger |
 | **CitasApp.Application** | Servicios y casos de uso |
-| **CitasApp.Domain** | Modelos e interfaces centrales |
-| **CitasApp.Infrastructure** | Repositorios, Npgsql, SQLite, JSON, CSV y observers concretos |
+| **CitasApp.Domain** | Modelos, interfaces y `CitaFactory` |
+| **CitasApp.Infrastructure** | Repositorios, PostgreSQL, SQLite y observers |
+| **CitasApp.Domain.Tests** | Pruebas unitarias del dominio |
+| **GitHub Actions** | Compilación y pruebas automáticas |
 
 ## Diagrama UML por capas
 
-La documentación UML del proyecto se encuentra en:
+La documentación UML existente se conserva en:
 
 ```text
 docs/doc-UML/README.md
@@ -655,111 +370,81 @@ docs/doc-UML/README.md
 ```text
 ArqSoft-S05-Angel/
 │
-├── Program.cs
-├── CitasApp.Web.csproj
-├── CitasApp.sln
-├── appsettings.json
-├── appsettings.Development.json
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 │
-├── Controllers/
-│   ├── HomeController.cs
-│   ├── PacienteController.cs
-│   ├── MedicoController.cs
-│   ├── CitaController.cs
-│   ├── ApiPacientesController.cs
-│   ├── ApiMedicosController.cs
-│   ├── ApiCitasController.cs
-│   └── CalculadoraController.cs
-│
-├── Views/
-│   ├── Home/
-│   ├── Paciente/
-│   ├── Medico/
-│   ├── Cita/
-│   └── Shared/
-│
-├── wwwroot/
-│   ├── css/
-│   ├── js/
-│   └── data/
-│
-├── database/
-│   └── 01_schema_seed.sql
+├── tests/
+│   └── CitasApp.Domain.Tests/
+│       ├── CitaFactoryTests.cs
+│       └── CitasApp.Domain.Tests.csproj
 │
 ├── src/
 │   ├── CitasApp.Domain/
+│   │   ├── Factories/
+│   │   │   └── CitaFactory.cs
 │   │   ├── Models/
 │   │   └── Interfaces/
 │   │
 │   ├── CitasApp.Application/
-│   │   ├── Interfaces/
-│   │   │   └── ICitaService.cs
-│   │   └── Services/
-│   │       ├── PacienteService.cs
-│   │       ├── MedicoService.cs
-│   │       └── CitaService.cs
-│   │
 │   └── CitasApp.Infrastructure/
-│       ├── Repositories/
-│       └── Observers/
 │
 ├── CitasApp.Api/
-│   ├── Program.cs
-│   ├── CitasApp.Api.csproj
-│   ├── Controllers/
-│   └── Data/
-│
+├── Controllers/
+├── Views/
+├── wwwroot/
+├── database/
 ├── docs/
-│   ├── Actividad32-CodeSmells.md
-│   └── doc-UML/
-│
 ├── assets/
+├── CitasApp.Web.csproj
+├── CitasApp.sln
 └── README.md
 ```
 
 ---
 
-# Patrones y principios aplicados
+# Exclusión de la carpeta de pruebas
 
-## Factory
+Como `CitasApp.Web.csproj` se encuentra en la raíz, podía intentar compilar archivos `.cs` dentro de `tests/`.
 
-`RepositoryFactory` permite seleccionar una implementación de repositorio sin crearla directamente desde los controladores.
+Para separar correctamente ambos proyectos se agregó:
 
-## Decorator
-
-`LoggingPacienteRepository` envuelve un repositorio de pacientes para agregar comportamiento de registro sin modificar la implementación original.
-
-## Observer
-
-`CitaService` notifica a `SmsObserver` y `EmailObserver` cuando una cita es confirmada.
-
-## Dependency Injection
-
-Los controladores y servicios reciben sus dependencias desde `Program.cs`.
-
-Ejemplo de la refactorización:
-
-```csharp
-builder.Services.AddScoped<ICitaService, CitaService>();
+```xml
+<ItemGroup>
+  <Compile Remove="tests/**/*.cs" />
+  <Content Remove="tests/**" />
+  <None Remove="tests/**" />
+  <EmbeddedResource Remove="tests/**" />
+</ItemGroup>
 ```
 
-## Inversión de dependencias
+Esto evita errores como:
 
-Application trabaja con interfaces de Domain y no necesita crear directamente repositorios u observers concretos.
+```text
+Duplicate AssemblyAttribute
+Duplicate TargetFrameworkAttribute
+The type or namespace name 'Xunit' could not be found
+```
 
 ---
 
-# Puertos de ejecución
+# Tecnologías utilizadas
 
-La solución contiene dos proyectos ejecutables distintos.
-
-| Proyecto | Dirección | Uso |
-| :--- | :--- | :--- |
-| **CitasApp.Web** | `http://localhost:5018` | Interfaz gráfica MVC |
-| **CitasApp.Api** | `http://localhost:5057` | API REST |
-| **Swagger** | `http://localhost:5057/swagger` | Documentación y pruebas de la API |
-
-Abrir `localhost:5057` muestra solamente el mensaje principal de la API. La interfaz gráfica y el menú de navegación se encuentran en `localhost:5018`.
+- **Lenguaje:** C#
+- **Framework:** ASP.NET Core
+- **Versión:** .NET 10
+- **Aplicación Web:** ASP.NET Core MVC
+- **API:** ASP.NET Core Web API
+- **Pruebas:** xUnit
+- **Estructura de pruebas:** Arrange, Act, Assert
+- **Automatización:** GitHub Actions
+- **Runner:** Ubuntu Latest
+- **Control de versiones:** Git y GitHub
+- **IDE:** JetBrains Rider
+- **Sistema operativo local:** Arch Linux
+- **Arquitectura:** Separación por capas
+- **Base de datos:** PostgreSQL
+- **Proveedor:** Npgsql
 
 ---
 
@@ -774,7 +459,7 @@ git branch --show-current
 Resultado esperado:
 
 ```text
-Code-Smell
+CI/CD
 ```
 
 ## Restaurar dependencias
@@ -792,21 +477,55 @@ dotnet clean CitasApp.sln
 ## Compilar
 
 ```bash
-dotnet build CitasApp.sln
+dotnet build CitasApp.sln --no-restore
 ```
 
 Resultado esperado:
 
 ```text
-Build succeeded.
+Build succeeded
 ```
 
-## Ejecutar la Web MVC
+## Ejecutar todas las pruebas
 
 ```bash
-dotnet run \
-  --project CitasApp.Web.csproj \
-  --launch-profile http
+dotnet test CitasApp.sln
+```
+
+## Ejecutar únicamente las pruebas de dominio
+
+```bash
+dotnet test   tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj   --verbosity normal
+```
+
+## Ejecutar los mismos pasos del CI
+
+```bash
+dotnet restore CitasApp.sln
+```
+
+```bash
+dotnet build   CitasApp.sln   --configuration Release   --no-restore
+```
+
+```bash
+dotnet test   tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj   --configuration Release   --no-build   --verbosity normal
+```
+
+Resultado esperado:
+
+```text
+Test summary: total: 1, failed: 0, succeeded: 1, skipped: 0
+```
+
+---
+
+# Ejecutar la aplicación
+
+## Web MVC
+
+```bash
+dotnet run   --project CitasApp.Web.csproj   --launch-profile http
 ```
 
 Abrir:
@@ -815,22 +534,10 @@ Abrir:
 http://localhost:5018
 ```
 
-Rutas principales:
-
-```text
-http://localhost:5018/
-http://localhost:5018/Paciente
-http://localhost:5018/Medico
-http://localhost:5018/Cita
-http://localhost:5018/Cita/Create
-```
-
-## Ejecutar la API
+## API REST
 
 ```bash
-dotnet run \
-  --project CitasApp.Api/CitasApp.Api.csproj \
-  --launch-profile http
+dotnet run   --project CitasApp.Api/CitasApp.Api.csproj   --launch-profile http
 ```
 
 Abrir:
@@ -840,404 +547,273 @@ http://localhost:5057
 http://localhost:5057/swagger
 ```
 
-## Probar endpoints
-
-```bash
-curl -i http://localhost:5057/api/Pacientes
-curl -i http://localhost:5057/api/Medicos
-curl -i http://localhost:5057/api/Citas
-curl -i http://localhost:5057/api/Citas/porpaciente/1
-```
-
-Confirmar una cita:
-
-```bash
-curl -i -X POST \
-  http://localhost:5057/api/Citas/1/confirmar
-```
-
-Respuesta esperada:
-
-```json
-{
-  "mensaje": "Cita confirmada y notificaciones enviadas"
-}
-```
-
 ---
 
-# Comprobar PostgreSQL desde la terminal
-
-Conectarse a la base:
-
-```bash
-psql -h localhost -p 5432 -U citasapp_user -d CitasAp
-```
-
-Después de ingresar la contraseña:
-
-```sql
-SELECT current_database(), current_user;
-```
-
-Resultado esperado:
-
-```text
-current_database | current_user
------------------+----------------
-CitasAp          | citasapp_user
-```
-
-Listar tablas:
-
-```text
-\dt
-```
-
-Consultar registros:
-
-```sql
-SELECT COUNT(*) FROM pacientes;
-SELECT COUNT(*) FROM medicos;
-SELECT COUNT(*) FROM citas;
-```
-
-Salir de `psql`:
-
-```text
-\q
-```
-
----
-
-# Prueba de persistencia
-
-Para comprobar que los registros se guardan realmente en PostgreSQL:
-
-1. Ejecutar la aplicación Web en `localhost:5018`.
-2. Registrar un paciente, médico o cita desde la interfaz.
-3. Consultar la tabla correspondiente en pgAdmin.
-4. Detener la aplicación.
-5. Iniciar nuevamente la Web.
-6. Confirmar que el registro continúa disponible.
-
-Consulta recomendada:
-
-```sql
-SELECT *
-FROM pacientes
-ORDER BY id;
-```
-
-La permanencia del registro después de reiniciar la aplicación demuestra que el dato está almacenado en PostgreSQL y no solamente en memoria.
-
----
-
-# Gestión de commits
-
-La rama utiliza commits intermedios para evidenciar el avance.
-
-Secuencia esperada:
-
-```text
-docs: identificar code smells antes de refactorizar
-refactor: desacoplar CitasController mediante ICitaService
-database: crear esquema PostgreSQL y migrar datos iniciales
-chore: agregar Npgsql y configurar secretos de conexion
-```
-
-Consultar el historial:
-
-```bash
-git --no-pager log --oneline --decorate -10
-```
-
-Revisar el diff de un commit:
-
-```bash
-git --no-pager show HEAD
-```
-
-Revisar solamente los archivos modificados:
-
-```bash
-git --no-pager show --stat HEAD
-```
-
-Flujo normal para un nuevo commit:
+# Subir cambios a GitHub
 
 ```bash
 git status
 git add .
 git status
-git commit -m "descripcion del cambio"
-git push
+git commit -m "docs: actualizar README para la rama CI/CD"
+git push -u origin "$(git branch --show-current)"
 ```
 
-Aunque `git add .` puede utilizarse, siempre debe revisarse `git status` antes del commit para evitar agregar bases locales, carpetas `bin`, `obj`, configuraciones de Rider o archivos temporales.
+Después del `push`, GitHub Actions debe ejecutar el workflow automáticamente.
 
 ---
 
-# Error de paginador `less` en Arch Linux
+# Permisos del token
 
-Si Git muestra:
+Para crear o modificar archivos dentro de:
 
 ```text
-error: cannot run less: No such file or directory
-fatal: unable to execute pager 'less'
+.github/workflows/
 ```
 
-Se puede instalar `less`:
-
-```bash
-sudo pacman -S less
-```
-
-También se puede ejecutar Git sin paginador:
-
-```bash
-git --no-pager log --oneline
-```
-
-O configurar `cat` como paginador global:
-
-```bash
-git config --global core.pager cat
-```
-
----
-
-# Uso en JetBrains Rider
+el Personal Access Token clásico necesita:
 
 ```text
-1. Abrir JetBrains Rider.
-2. Seleccionar Open.
-3. Abrir la carpeta ArqSoft-S05-Angel o el archivo CitasApp.sln.
-4. Esperar la restauración de dependencias.
-5. Abrir la terminal integrada.
-6. Verificar que la rama activa sea Code-Smell.
-7. Compilar con dotnet build CitasApp.sln.
-8. Ejecutar CitasApp.Web para utilizar la interfaz gráfica.
-9. Ejecutar CitasApp.Api para utilizar Swagger o los endpoints REST.
-10. Mantener PostgreSQL activo antes de ejecutar los proyectos que dependan de la base.
+repo
+workflow
+```
+
+No necesita:
+
+```text
+write:packages
+delete:packages
+admin:org
+delete_repo
+```
+
+Si aparece:
+
+```text
+refusing to allow a Personal Access Token to create or update workflow
+without workflow scope
+```
+
+se debe activar:
+
+```text
+workflow — Update GitHub Action workflows
+```
+
+Después:
+
+```bash
+printf "protocol=https
+host=github.com
+
+" | git credential reject
+```
+
+Y repetir:
+
+```bash
+git push -u origin "$(git branch --show-current)"
 ```
 
 ---
 
-# Requisitos en Arch Linux
+# Comprobar GitHub Actions
 
-## .NET SDK
-
-```bash
-sudo pacman -S dotnet-sdk
+```text
+1. Abrir el repositorio en GitHub
+2. Entrar a la pestaña Actions
+3. Seleccionar el workflow CI
+4. Abrir la ejecución más reciente
+5. Revisar Compilar y ejecutar pruebas
+6. Confirmar que todos los pasos estén en verde
 ```
 
-Verificar:
+Pasos esperados:
 
-```bash
-dotnet --list-sdks
-dotnet --list-runtimes
+```text
+✓ Descargar repositorio
+✓ Configurar .NET 10
+✓ Restaurar dependencias
+✓ Compilar solución
+✓ Ejecutar pruebas xUnit
 ```
-
-## PostgreSQL
-
-```bash
-sudo pacman -S postgresql
-```
-
-Comprobar el servicio:
-
-```bash
-systemctl status postgresql
-```
-
-Iniciar el servicio cuando sea necesario:
-
-```bash
-sudo systemctl start postgresql
-```
-
-Habilitarlo al iniciar el sistema:
-
-```bash
-sudo systemctl enable postgresql
-```
-
-## pgAdmin 4
-
-pgAdmin se utiliza para crear la base `CitasAp`, ejecutar los scripts SQL, revisar tablas y comprobar los registros guardados por la aplicación.
 
 ---
 
-# Seguridad
+# Advertencia de SQLite
 
-- No guardar contraseñas dentro de `Program.cs`.
-- No guardar contraseñas dentro de `appsettings.json`.
-- No agregar credenciales al README.
-- No subir salidas de `dotnet user-secrets list`.
-- Usar `citasapp_user` en lugar del administrador `postgres`.
-- Revisar `git diff` antes de cada commit.
-- Mantener `bin/`, `obj/`, `.idea/` y bases locales fuera de Git cuando corresponda.
+Durante la compilación puede aparecer:
 
-Comprobar que no se escribió accidentalmente una contraseña:
-
-```bash
-git grep -n "Password="
+```text
+warning NU1903:
+Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.11
+has a known high severity vulnerability
 ```
+
+Esta advertencia no impide actualmente la compilación ni la ejecución de las pruebas, pero el paquete debe actualizarse o sustituirse después de comprobar su compatibilidad.
 
 ---
 
 # Solución de problemas
 
-## La interfaz gráfica no aparece
-
-Probablemente se está ejecutando la API en `5057`.
-
-Ejecutar la Web:
+## La prueba no aparece
 
 ```bash
-dotnet run \
-  --project CitasApp.Web.csproj \
-  --launch-profile http
+dotnet test   tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj   --list-tests
 ```
 
-Abrir:
+Debe mostrarse:
 
 ```text
-http://localhost:5018
+CitasApp.Domain.Tests.CitaFactoryTests.Construir_ConDatosValidos_CreaCitaConEstadoPendiente
 ```
 
-## La aplicación no encuentra la conexión
-
-Verificar los secretos:
+## La prueba falla
 
 ```bash
-dotnet user-secrets list --project CitasApp.Web.csproj
-dotnet user-secrets list --project CitasApp.Api/CitasApp.Api.csproj
+dotnet test   tests/CitasApp.Domain.Tests/CitasApp.Domain.Tests.csproj   --verbosity detailed
 ```
 
-La clave debe llamarse:
+Revisar:
 
 ```text
-ConnectionStrings:CitasAppDb
+Expected
+Actual
+Stack Trace
 ```
 
-## PostgreSQL rechaza la conexión
-
-Comprobar:
+## GitHub no ejecuta el workflow
 
 ```bash
-systemctl status postgresql
+ls -la .github/workflows
+cat .github/workflows/ci.yml
+git ls-files .github/workflows/ci.yml
 ```
 
-Después probar directamente:
+## El proyecto Web vuelve a incluir `tests`
+
+Verificar que `CitasApp.Web.csproj` tenga la exclusión de `tests/**`, después ejecutar:
 
 ```bash
-psql -h localhost -p 5432 -U citasapp_user -d CitasAp
+find . -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +
+dotnet restore CitasApp.sln
+dotnet build CitasApp.sln --no-restore
 ```
-
-## Las tablas no aparecen en pgAdmin
-
-Actualizar:
-
-```text
-CitasAp → Schemas → public → Tables → Refresh
-```
-
-## El script muestra `relation already exists`
-
-Es un `NOTICE`, no un error. El script evita duplicar tablas e índices existentes.
 
 ---
 
 # Evidencias de ejecución
 
-Las imágenes existentes del proyecto se conservan dentro de la carpeta `assets/` y se muestran a continuación.
+Las imágenes existentes se conservan dentro de `assets/`.
 
 ## Página principal y panel de endpoints
 
-Esta captura muestra la página principal de CitasApp con el panel para probar los endpoints disponibles.
-
 ![Página principal de CitasApp](assets/1.png)
 
-## Comprobación del patrón Observer
+## Comprobación por terminal
 
-Esta evidencia muestra la comprobación por terminal del comportamiento relacionado con las notificaciones de citas.
-
-![Comprobación por terminal del patrón Observer](assets/2.png)
+![Comprobación por terminal del proyecto](assets/2.png)
 
 ## Interfaz Web de CitasApp
 
-Esta captura muestra la aplicación Web MVC funcionando con su menú de navegación y las vistas del sistema.
-
 ![Visualización de CitasApp en la página Web](assets/3.png)
 
-## Evidencias adicionales recomendadas para la rama `Code-Smell`
+## Evidencias recomendadas para `CI/CD`
 
-También pueden agregarse capturas de:
+- Rama `CI/CD` activa
+- Archivo `CitaFactoryTests.cs`
+- Resultado local con una prueba exitosa
+- Archivo `.github/workflows/ci.yml`
+- Pestaña Actions de GitHub
+- Workflow con check verde
+- Job `Compilar y ejecutar pruebas`
+- Resultado de `dotnet build`
+- Resultado de `dotnet test`
+- Pull Request con CI aprobado
 
-- Rama `Code-Smell` activa.
-- Historial con el commit anterior y el commit posterior a la refactorización.
-- Diff donde `CitasController` cambia de `CitaService` a `ICitaService`.
-- Compilación exitosa de `CitasApp.sln`.
-- Interfaz Web funcionando en `localhost:5018`.
-- Swagger funcionando en `localhost:5057/swagger`.
-- Tablas `pacientes`, `medicos` y `citas` en pgAdmin 4.
-- Consulta SQL mostrando los datos migrados desde los archivos originales.
-- Registro creado desde la Web y visible posteriormente en PostgreSQL.
+---
+
+# Beneficios obtenidos
+
+- Detección temprana de errores
+- Comprobación automática en cada `push`
+- Menor dependencia de pruebas manuales
+- Documentación del comportamiento esperado
+- Mayor seguridad al modificar `CitaFactory`
+- Mejor revisión de Pull Requests
+- Base para agregar más pruebas
+- Preparación para un futuro despliegue continuo
 
 ---
 
 # Mejoras futuras
 
 ```text
-[ ] Aplicar Extract Class en Controllers/CitaController.cs.
+[ ] Agregar pruebas para datos inválidos
 
-[ ] Crear CitaFormService para preparar formularios y catálogos.
+[ ] Validar PacienteId y MedicoId
 
-[ ] Agregar validaciones con Data Annotations.
+[ ] Validar que Motivo no esté vacío
 
-[ ] Evitar citas duplicadas para un médico en la misma fecha y hora.
+[ ] Agregar pruebas para CitaService
 
-[ ] Agregar edición y eliminación de pacientes.
+[ ] Agregar pruebas para confirmar citas
 
-[ ] Agregar edición y eliminación de médicos.
+[ ] Probar SmsObserver y EmailObserver
 
-[ ] Agregar edición y eliminación de citas.
+[ ] Agregar mocks para repositorios
 
-[ ] Agregar migraciones versionadas para cambios futuros del esquema.
+[ ] Agregar pruebas de integración para la API
 
-[ ] Agregar pruebas unitarias para ICitaService y CitaService.
+[ ] Agregar pruebas con PostgreSQL
 
-[ ] Agregar pruebas de integración con PostgreSQL.
+[ ] Generar reportes de cobertura
 
-[ ] Implementar notificaciones reales de correo y SMS.
+[ ] Proteger ramas contra merges con CI fallido
 
-[ ] Evitar notificar nuevamente una cita ya confirmada.
+[ ] Actualizar el paquete SQLite señalado por NU1903
 
-[ ] Centralizar el manejo de errores de conexión.
+[ ] Implementar una etapa de despliegue continuo
+```
 
-[ ] Agregar variables de entorno para despliegue fuera del entorno local.
+---
+
+# Gestión de commits
+
+Secuencia recomendada:
+
+```text
+test: crear CitaFactory
+test: agregar proyecto xUnit y primera prueba
+chore: excluir tests del proyecto web
+ci: agregar workflow de GitHub Actions
+docs: actualizar README de la rama CI/CD
+```
+
+Consultar historial:
+
+```bash
+git --no-pager log --oneline --decorate -10
 ```
 
 ---
 
 # Conclusión
 
-La rama `Code-Smell` permitió revisar la estructura interna de CitasApp y aplicar una refactorización sin cambiar las funciones del sistema.
+La rama `CI/CD` incorporó una primera prueba automatizada a CitasApp y estableció un proceso de Integración Continua con GitHub Actions.
 
-Se identificó Tight Coupling en el controlador de citas de la API y se corrigió mediante la interfaz `ICitaService` y Dependency Injection. También se documentó una señal de God Class en el controlador MVC de citas y se propuso Extract Class como mejora posterior.
+La prueba `Construir_ConDatosValidos_CreaCitaConEstadoPendiente` verifica que `CitaFactory` cree correctamente una cita con estado `Pendiente` y conserve el identificador del paciente.
 
-Además, se creó la base PostgreSQL `CitasAp`, se definieron las tablas y relaciones necesarias, se migraron los datos iniciales y se configuró Npgsql junto con User Secrets para mantener la contraseña fuera del repositorio.
+También se creó el proyecto `CitasApp.Domain.Tests`, se conectó con la capa de dominio y se corrigió la configuración de `CitasApp.Web.csproj` para evitar que el proyecto Web compilara los archivos de la carpeta `tests`.
 
-La separación mediante interfaces permite sustituir progresivamente los repositorios basados en archivos por repositorios PostgreSQL sin modificar los controladores ni los modelos de dominio. De esta forma, la aplicación conserva su comportamiento mientras mejora el desacoplamiento, la seguridad y la persistencia de datos.
+Finalmente, `.github/workflows/ci.yml` automatiza la restauración, compilación y ejecución de pruebas en cada `push` y Pull Request, lo cual permite detectar fallos antes de integrar cambios y prepara el repositorio para futuras pruebas y despliegues.
 
 ---
 
 ## Cláusula de IA
 
 ```text
-Yo, Angel Abraham Lugo Saenz, declaro que utilicé IA como apoyo para organizar y redactar este README, documentar los code smells identificados, explicar la refactorización mediante Dependency Injection y describir la configuración de PostgreSQL y Npgsql.
+Yo, Angel Abraham Lugo Saenz, declaro que utilicé IA como apoyo para organizar y redactar este README, documentar la prueba unitaria con xUnit, explicar Arrange, Act y Assert, y describir la configuración de Integración Continua con GitHub Actions.
 
-El código, la estructura del proyecto, las pruebas, la configuración local de la base de datos y las decisiones principales fueron revisadas y ejecutadas como parte de la actividad escolar de Arquitectura de Software.
+El código, la estructura del proyecto, la ejecución local de las pruebas, la configuración del workflow y las decisiones principales fueron revisadas y ejecutadas como parte de la actividad escolar de Arquitectura de Software.
 ```
