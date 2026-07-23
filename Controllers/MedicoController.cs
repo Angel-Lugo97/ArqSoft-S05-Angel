@@ -1,51 +1,48 @@
-﻿using CitasApp.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using CitasApp.Models;
-using Microsoft.AspNetCore.Mvc;
+using CitasApp.Interfaces;
 
-namespace Citas_App.Controllers
+namespace CitasApp.Controllers
 {
     public class MedicoController : Controller
     {
-        private List<Medico> Medicos()
+        private readonly IMedicoRepository _repo;
+
+        public MedicoController(IMedicoRepository repo)
         {
-            return DatosJson.Leer<Medico>("Medicos.json");
+            _repo = repo;
         }
 
         public IActionResult Index()
         {
-            return View(Medicos());
+            return View(_repo.ObtenerTodos());
+        }
+
+        public IActionResult Detalle(int id)
+        {
+            var medico = _repo.ObtenerPorId(id);
+
+            return medico == null
+                ? NotFound()
+                : View(medico);
         }
 
         public IActionResult Create()
         {
-            return View();
+            return View(new Medico());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Medico medico)
         {
-            var medicos = Medicos();
-
-            medico.Id = medicos.Any() ? medicos.Max(m => m.Id) + 1 : 1;
-
-            medicos.Add(medico);
-
-            DatosJson.Guardar("Medicos.json", medicos);
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        public IActionResult Detalle(int id)
-        {
-            var medico = Medicos().FirstOrDefault(m => m.Id == id);
-
-            if (medico == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return View(medico);
             }
 
-            return View(medico);
+            _repo.Agregar(medico);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

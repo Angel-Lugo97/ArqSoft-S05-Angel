@@ -1,36 +1,138 @@
-﻿@{
-    ViewData["Title"] = "Inicio";
+@{
+    Layout = null;
+    ViewData["Title"] = "Panel de pruebas";
 }
 
-<div class="hero">
-    <h1>CitasApp</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CitasApp - Panel de pruebas</title>
+    <link rel="stylesheet" href="~/css/panel-pruebas.css" />
+</head>
+<body>
 
-    <p>
-        Sistema web para administrar pacientes, médicos y citas médicas.
-        La información se guarda de forma local usando archivos JSON.
-    </p>
+<div class="page">
 
-    <div class="hero-actions">
-        <a class="action-link" asp-controller="Cita" asp-action="Index">Ver agenda</a>
-        <a class="action-link" asp-controller="Cita" asp-action="Create">Agregar cita</a>
-        <a class="action-link" asp-controller="Paciente" asp-action="Index">Ver pacientes</a>
-        <a class="action-link" asp-controller="Medico" asp-action="Index">Ver médicos</a>
-    </div>
+    <header class="encabezado">
+        <div>
+            <h1>CitasApp</h1>
+            <p>Pruebas manuales de la API de citas médicas</p>
+        </div>
+
+        <div class="estado-api">
+            API GET
+        </div>
+    </header>
+
+    <main class="dashboard">
+
+        <section class="zona-principal">
+
+            <div class="fila-superior">
+
+                <article class="panel">
+                    <div class="panel-titulo">
+                        <div>
+                            <h2>Pacientes</h2>
+                            <p>Consultar pacientes registrados</p>
+                        </div>
+                        <span>/api/pacientes</span>
+                    </div>
+
+                    <div class="controles">
+                        <button onclick="listarPacientes()">Listar todos</button>
+                        <input id="pacienteId" type="number" value="1" />
+                        <button onclick="buscarPaciente()">Buscar por id</button>
+                    </div>
+
+                    <div id="statusPacientes" class="status">-</div>
+                    <pre id="salidaPacientes">-</pre>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-titulo">
+                        <div>
+                            <h2>Médicos</h2>
+                            <p>Consultar médicos disponibles</p>
+                        </div>
+                        <span>/api/medicos</span>
+                    </div>
+
+                    <div class="controles">
+                        <button onclick="listarMedicos()">Listar todos</button>
+                        <input id="medicoId" type="number" value="1" />
+                        <button onclick="buscarMedico()">Buscar por id</button>
+                    </div>
+
+                    <div id="statusMedicos" class="status">-</div>
+                    <pre id="salidaMedicos">-</pre>
+                </article>
+
+            </div>
+
+            <article class="panel panel-citas">
+                <div class="panel-titulo">
+                    <div>
+                        <h2>Citas médicas</h2>
+                        <p>Consulta general de citas o búsqueda por paciente</p>
+                    </div>
+                    <span>/api/citas</span>
+                </div>
+
+                <div class="controles">
+                    <button onclick="listarCitas()">Listar todas</button>
+                    <input id="pacienteCitaId" type="number" value="1" />
+                    <button onclick="buscarCitasPorPaciente()">Por paciente</button>
+                </div>
+
+                <div id="statusCitas" class="status">-</div>
+                <pre id="salidaCitas">-</pre>
+            </article>
+
+        </section>
+
+        <aside class="zona-lateral">
+
+            <article class="panel calculadora-card">
+                <div class="panel-titulo vertical">
+                    <div>
+                        <h2>Calculadora</h2>
+                        <p>Operaciones usando endpoints GET</p>
+                    </div>
+                    <span>/api/calculadora</span>
+                </div>
+
+                <div class="numeros">
+                    <label>
+                        Número A
+                        <input id="numeroA" type="number" value="10" />
+                    </label>
+
+                    <label>
+                        Número B
+                        <input id="numeroB" type="number" value="5" />
+                    </label>
+                </div>
+
+                <div class="botones-calculadora">
+                    <button onclick="calcular('sumar')">Sumar</button>
+                    <button onclick="calcular('restar')">Restar</button>
+                    <button onclick="calcular('multiplicar')">Multiplicar</button>
+                    <button onclick="calcular('dividir')">Dividir</button>
+                </div>
+
+                <div id="statusCalculadora" class="status">-</div>
+                <pre id="salidaCalculadora">-</pre>
+            </article>
+
+        </aside>
+
+    </main>
+
 </div>
 
-<div class="info-grid">
-    <div class="info-box">
-        <h3>Pacientes</h3>
-        <p>Consulta y registra pacientes dentro del sistema.</p>
-    </div>
-
-    <div class="info-box">
-        <h3>Médicos</h3>
-        <p>Administra médicos disponibles y sus especialidades.</p>
-    </div>
-
-    <div class="info-box">
-        <h3>Citas</h3>
-        <p>Crea citas relacionando pacientes, médicos, fecha y hora.</p>
-    </div>
-</div>
+<script src="~/js/panel-pruebas.js"></script>
+</body>
+</html>

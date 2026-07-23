@@ -1,0 +1,148 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #11141c;
+    color: #e8eaf0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.page {
+    padding: 18px;
+}
+
+.header {
+    margin-bottom: 22px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.header h1 span {
+    color: #c8ccd8;
+}
+
+.header p {
+    margin: 8px 0 0 0;
+    color: #8790a6;
+    font-size: 14px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: #1d222e;
+    border: 1px solid #2d3444;
+    border-radius: 8px;
+    padding: 18px;
+    min-height: 260px;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.card-title h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.card-title span {
+    color: #4d7ce2;
+    background: #243455;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.controls.calculadora {
+    flex-wrap: nowrap;
+}
+
+button {
+    background: #5b8def;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+button:hover {
+    background: #78a2f5;
+}
+
+input {
+    width: 70px;
+    background: #131820;
+    color: #f4f4f4;
+    border: 1px solid #252c38;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.calculadora input {
+    width: 80px;
+}
+
+.status {
+    color: #98a1b8;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.status.ok {
+    color: #35d06f;
+}
+
+.status.error {
+    color: #ff6b6b;
+}
+
+pre {
+    margin: 0;
+    background: #101319;
+    color: #f1f3f8;
+    border-radius: 4px;
+    padding: 14px;
+    min-height: 110px;
+    max-height: 180px;
+    overflow: auto;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 1200px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

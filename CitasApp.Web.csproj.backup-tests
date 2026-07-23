@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <ItemGroup>
+      <ProjectReference Include="src\CitasApp.Infrastructure\CitasApp.Infrastructure.csproj" />
+      <ProjectReference Include="src\CitasApp.Domain\CitasApp.Domain.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+      <UserSecretsId>34a5fb26-1b70-41f7-96c9-2c81dfe6ad5c</UserSecretsId>
+  </PropertyGroup>
+    <ItemGroup>
+        <Compile Remove="src/**/*.cs" />
+        <Content Remove="src/**" />
+        <None Remove="src/**" />
+        <EmbeddedResource Remove="src/**" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
+    </ItemGroup>
+
+
+  <ItemGroup>
+    <Compile Remove="CitasApp.Api/**/*.cs" />
+    <Content Remove="CitasApp.Api/**" />
+    <None Remove="CitasApp.Api/**" />
+  </ItemGroup>
+
+</Project>

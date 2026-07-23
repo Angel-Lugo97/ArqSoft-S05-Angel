@@ -1,0 +1,273 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --fondo: #11121a;
+    --panel: #1c1d2b;
+    --panel-2: #24263a;
+    --morado: #4b1f83;
+    --morado-claro: #7c3aed;
+    --morado-suave: #b794f4;
+    --texto: #eeeeff;
+    --gris: #a5a8bc;
+    --borde: #3a2a55;
+    --negro: #0d0e14;
+    --verde: #39d47a;
+    --rojo: #ff6464;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at top right, #301657 0, transparent 330px),
+        linear-gradient(180deg, #171320, var(--fondo));
+    color: var(--texto);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.page {
+    padding: 24px;
+}
+
+.encabezado {
+    background: linear-gradient(90deg, #35135f, #181421);
+    border: 1px solid #64409b;
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.encabezado h1 {
+    margin: 0;
+    font-size: 30px;
+    letter-spacing: 1px;
+}
+
+.encabezado p {
+    margin: 6px 0 0;
+    color: #c9bedb;
+    font-size: 14px;
+}
+
+.estado-api {
+    background: #120a1f;
+    color: #d9c6ff;
+    border: 1px solid #7b55b0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    align-items: start;
+}
+
+.zona-principal {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.fila-superior {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.zona-lateral {
+    position: sticky;
+    top: 20px;
+}
+
+.panel {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.panel-citas {
+    min-height: 330px;
+    border-left: 7px solid var(--morado-claro);
+}
+
+.calculadora-card {
+    min-height: 560px;
+    border-top: 7px solid var(--morado-claro);
+}
+
+.panel-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.panel-titulo.vertical {
+    flex-direction: column;
+}
+
+.panel-titulo h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.panel-titulo p {
+    margin: 4px 0 0;
+    color: var(--gris);
+    font-size: 13px;
+}
+
+.panel-titulo span {
+    background: #2c1b49;
+    color: var(--morado-suave);
+    border: 1px solid #563783;
+    padding: 5px 9px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.controles {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+button {
+    background: var(--morado-claro);
+    color: white;
+    border: 1px solid #9c6bff;
+    border-radius: 9px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+button:hover {
+    background: #9257ff;
+}
+
+input {
+    background: #11131b;
+    color: white;
+    border: 1px solid #3d4057;
+    border-radius: 9px;
+    padding: 9px;
+    outline: none;
+}
+
+.controles input {
+    width: 78px;
+}
+
+input:focus {
+    border-color: var(--morado-claro);
+}
+
+.numeros {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.numeros label {
+    color: var(--gris);
+    font-size: 13px;
+}
+
+.numeros input {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.botones-calculadora {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.status {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--gris);
+    margin-bottom: 8px;
+}
+
+.status.ok {
+    color: var(--verde);
+}
+
+.status.error {
+    color: var(--rojo);
+}
+
+pre {
+    margin: 0;
+    background: var(--negro);
+    border: 1px solid #2c3040;
+    color: #f1f1f1;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 150px;
+    max-height: 250px;
+    overflow: auto;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+}
+
+.panel-citas pre {
+    min-height: 190px;
+}
+
+.calculadora-card pre {
+    min-height: 190px;
+}
+
+@media (max-width: 1100px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .zona-lateral {
+        position: static;
+    }
+
+    .calculadora-card {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 750px) {
+    .encabezado {
+        display: block;
+    }
+
+    .estado-api {
+        margin-top: 12px;
+        width: fit-content;
+    }
+
+    .fila-superior {
+        grid-template-columns: 1fr;
+    }
+
+    .botones-calculadora {
+        grid-template-columns: 1fr;
+    }
+}

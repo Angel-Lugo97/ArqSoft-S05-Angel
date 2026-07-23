@@ -1,0 +1,93 @@
+using CitasApp.Interfaces;
+using CitasApp.Models;
+
+namespace CitasApp.Repositories
+{
+    public class CsvPacienteRepository : IPacienteRepository
+    {
+        private readonly string _filePath;
+
+        public CsvPacienteRepository(string filePath)
+        {
+            _filePath = filePath;
+
+            if (!File.Exists(_filePath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
+                File.WriteAllText(_filePath, "Id,Nombre,Apellido,Email,Telefono\n");
+            }
+        }
+
+        private List<Paciente> LeerTodos()
+        {
+            var lista = new List<Paciente>();
+
+            foreach (var linea in File.ReadAllLines(_filePath).Skip(1))
+            {
+                if (string.IsNullOrWhiteSpace(linea)) continue;
+
+                var p = linea.Split(',');
+                if (p.Length < 5) continue;
+
+                lista.Add(new Paciente
+                {
+                    Id = int.Parse(p[0]),
+                    Nombre = p[1],
+                    Apellido = p[2],
+                    Email = p[3],
+                    Telefono = p[4]
+                });
+            }
+
+            return lista;
+        }
+
+        private void EscribirTodos(List<Paciente> pacientes)
+        {
+            var lineas = new List<string>
+            {
+                "Id,Nombre,Apellido,Email,Telefono"
+            };
+
+            foreach (var p in pacientes)
+            {
+                lineas.Add(
+                    $"{p.Id}," +
+                    $"{Limpiar(p.Nombre)}," +
+                    $"{Limpiar(p.Apellido)}," +
+                    $"{Limpiar(p.Email)}," +
+                    $"{Limpiar(p.Telefono)}"
+                );
+            }
+
+            File.WriteAllLines(_filePath, lineas);
+        }
+
+        private static string Limpiar(string texto)
+        {
+            return (texto ?? string.Empty).Replace(",", ";");
+        }
+
+        public List<Paciente> ObtenerTodos()
+        {
+            return LeerTodos();
+        }
+
+        public Paciente? ObtenerPorId(int id)
+        {
+            return LeerTodos().FirstOrDefault(p => p.Id == id);
+        }
+
+        public void Agregar(Paciente paciente)
+        {
+            var pacientes = LeerTodos();
+
+            paciente.Id = pacientes.Any()
+                ? pacientes.Max(p => p.Id) + 1
+                : 1;
+
+            pacientes.Add(paciente);
+            EscribirTodos(pacientes);
+        }
+    }
+}
